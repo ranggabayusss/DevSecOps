@@ -1,1 +1,6 @@
 *.sqlite*
+/database/backups/
+.env
+/database/backups/
+/zap-report.html
+/zap-report.json
