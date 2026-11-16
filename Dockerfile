@@ -17,5 +17,9 @@ RUN apt-get update && apt-get install -y \
 # Menginstal ekstensi PHP (termasuk pdo_mysql untuk database)
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
+# Disable PHP version disclosure
+RUN printf '%s\n' 'expose_php=Off' \
+    > /usr/local/etc/php/conf.d/zz-security.ini
+
 # Mengambil Composer terbaru untuk package Laravel
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
