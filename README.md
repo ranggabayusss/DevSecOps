@@ -36,7 +36,7 @@ Untuk volume database lama, variabel `MYSQL_*` hanya digunakan saat volume MySQL
 
 ## Pengujian
 
-Jalankan `php artisan test`. Tes keamanan yang ditambahkan memeriksa akses dashboard, pembatasan role, perlindungan dari mass assignment role saat registrasi, dan tidak tersedianya endpoint GPS.
+Jalankan `php artisan test`. Tes keamanan yang ditambahkan memeriksa akses dashboard, pembatasan role, perlindungan dari mass assignment role saat registrasi, tidak tersedianya endpoint GPS, security headers, dan path repository yang tidak boleh dapat diakses lewat HTTP.
 
 ## Fitur GPS yang dihapus
 
@@ -45,6 +45,14 @@ Jalankan `php artisan test`. Tes keamanan yang ditambahkan memeriksa akses dashb
 - UI peta, tombol mulai/stop GPS, Leaflet, dan pengiriman koordinat dari dashboard dihapus.
 - Migration baru menghapus tabel `location_histories` dan `tracking_locations` dari database saat migration dijalankan.
 
-Diagram pada folder `New folder/` merupakan artefak desain lama dan masih memuat alur GPS; diagram tersebut belum diperbarui pada paket ini. Migration lama tetap dipertahankan sebagai riwayat perubahan skema. Migration penghapusan GPS tidak dapat memulihkan data koordinat yang telah dihapus saat di-rollback.
+Diagram pada folder `docs/design/` merupakan artefak desain lama dan masih memuat alur GPS; diagram tersebut belum diperbarui pada paket ini. Migration lama tetap dipertahankan sebagai riwayat perubahan skema. Migration penghapusan GPS tidak dapat memulihkan data koordinat yang telah dihapus saat di-rollback.
 
-Lihat [SECURITY_STRIDE.md](SECURITY_STRIDE.md) untuk ringkasan threat model dan mitigasi.
+## Struktur dokumentasi dan keamanan
+
+- `docs/SECURITY_STRIDE.md` — ringkasan threat model, mitigasi, dan catatan pengujian.
+- `docs/design/` — diagram DFD, flowchart, dan use case.
+- `docs/security/zap.yaml` — konfigurasi pemindaian OWASP ZAP. Hasil scan (`zap-report.*`) bersifat lokal dan tidak disimpan di repository.
+
+File sensitif seperti `.env`, `vendor/`, `node_modules/`, `storage/logs`, database SQL, dan hasil scan tidak diikutsertakan ke Git maupun ke build context Docker (`.dockerignore`). Web server hanya menyajikan folder `public/`, sehingga kode aplikasi dan dokumentasi tidak dapat diakses dari browser. Security headers juga dipasang di level aplikasi (`app/Http/Middleware/SecurityHeaders.php`) sebagai lapisan cadangan ketika aplikasi dijalankan tanpa Nginx.
+
+Lihat [docs/SECURITY_STRIDE.md](docs/SECURITY_STRIDE.md) untuk ringkasan threat model dan mitigasi.

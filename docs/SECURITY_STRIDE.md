@@ -25,9 +25,25 @@ Review ini dilakukan terhadap source code yang tersedia pada repository. Perubah
 
 Migration pembuat tabel lama sengaja tetap disimpan sebagai jejak historis migration Laravel. Migration baru berjalan setelah migration lama dan menghapus tabel tersebut. Rollback hanya dapat membuat ulang tabel kosong; data GPS yang sudah dihapus tidak dapat dipulihkan.
 
+## Pengerasan paparan file dan konfigurasi
+
+Lapisan berikut memastikan file proyek tidak dapat diakses langsung dari browser maupun terbawa ke artefak build:
+
+- **Docroot terbatas pada `public/`.** Nginx dan Apache hanya menyajikan `public/`; `.env`, `app/`, `config/`, `database/`, `storage/`, `vendor/`, `tests/`, dan dokumen internal berada di luar jangkauan HTTP.
+- **Middleware `SecurityHeaders`.** Header `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`, `Cross-Origin-Resource-Policy`, `X-Permitted-Cross-Domain-Policies`, dan CSP report-only dipasang di level aplikasi; HSTS ditambahkan otomatis pada request HTTPS.
+- **Nginx.** `server_tokens off`, blokir dotfile, file sensitif (`composer.*`, `package*.json`, `phpunit.xml`, `.env`), ekstensi berbahaya (`.sql`, `.log`, `.bak`, `.old`, `.conf`, `.yaml`, `.md`, `.pdf`, `.drawio`), metode HTTP selain GET/HEAD/POST/PUT/PATCH/DELETE/OPTIONS, serta `fastcgi_hide_header X-Powered-By`.
+- **PHP-FPM.** `expose_php=Off`, `display_errors=Off`, `log_errors=On`, `cgi.fix_pathinfo=0`, `session.use_strict_mode=1`, cookie sesi HttpOnly + SameSite, dan `allow_url_include=Off`.
+- **Apache.** `public/.htaccess` menambahkan security headers, mematikan `X-Powered-By`, dan menolak file tersembunyi.
+- **Docker.** `.dockerignore` mengecualikan `.env`, `.git`, `vendor`, `node_modules`, storage, database lokal, hasil scan, dan dokumentasi dari build context.
+- **Repository.** `zap-report.*`, `database/backups/`, `*.sql`, `.env*`, dan artefak lokal diabaikan oleh Git. `robots.txt` menolak seluruh crawling.
+
+Seluruh path sensitif juga diuji melalui `tests/Feature/SecurityHeadersTest.php` (header keamanan, response error, dan path repository yang tidak boleh routable).
+
 ## Pengujian yang disertakan
 
 `tests/Feature/StrideSecurityTest.php` mencakup pengujian bahwa endpoint tracking tidak tersedia, role yang dikirim saat registrasi tidak dapat menaikkan hak akses, dashboard memerlukan login, dan endpoint admin menolak pengguna biasa.
+
+`tests/Feature/SecurityHeadersTest.php` mencakup pengujian security headers pada response normal dan error, serta memastikan path seperti `.env`, `composer.json`, `phpunit.xml`, log, dan database lokal tidak dapat diakses melalui HTTP.
 
 Jalankan:
 
