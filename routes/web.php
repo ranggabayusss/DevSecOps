@@ -92,6 +92,9 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/communities', [CommunityController::class, 'index'])
             ->name('communities.index');
 
+        Route::get('/communities/select', [CommunityController::class, 'select'])
+            ->name('communities.select');
+
         Route::get('/communities/create', [CommunityController::class, 'create'])
             ->name('communities.create');
 

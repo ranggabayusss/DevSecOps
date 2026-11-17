@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard - Unknown Rider</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css'])
 </head>
 <body class="min-h-screen bg-gray-950 text-white">
     <header class="border-b border-orange-500 bg-black px-6 py-5">

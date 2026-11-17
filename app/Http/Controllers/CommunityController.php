@@ -23,6 +23,17 @@ class CommunityController extends Controller
         return view('admin.communities.index', compact('communities'));
     }
 
+    // Menampilkan daftar komunitas yang dapat dipilih untuk dikelola
+    public function select()
+    {
+        $communities = Community::with('leader')
+            ->withCount('members')
+            ->orderBy('name')
+            ->paginate(15);
+
+        return view('admin.communities.select', compact('communities'));
+    }
+
     // Menampilkan form pembuatan komunitas
     public function create()
     {

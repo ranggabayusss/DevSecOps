@@ -19,7 +19,7 @@
             </p>
         </a>
 
-        <a href="{{ route('admin.communities.index') }}"
+        <a href="{{ route('admin.communities.select') }}"
            class="rounded-lg bg-gray-800 p-4 hover:bg-gray-700">
             <h3 class="font-semibold">Daftar Komunitas</h3>
             <p class="mt-1 text-sm text-gray-400">

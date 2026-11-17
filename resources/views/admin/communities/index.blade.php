@@ -40,6 +40,7 @@
                         <th class="p-4">Nama Komunitas</th>
                         <th class="p-4">Ketua</th>
                         <th class="p-4">Jumlah Anggota</th>
+                        <th class="p-4">Aksi</th>
                     </tr>
                 </thead>
 
@@ -56,6 +57,13 @@
 
                             <td class="p-4">
                                 {{ $community->members_count }} anggota
+                            </td>
+
+                            <td class="p-4">
+                                <a href="{{ route('admin.communities.members.index', $community->id) }}"
+                                   class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold hover:bg-blue-700">
+                                    Kelola Anggota
+                                </a>
                             </td>
                         </tr>
                     @endforeach
