@@ -1,246 +1,225 @@
-@extends('layouts.guest')
+@extends('layouts.app')
 
 @section('title', 'Tambah Komunitas')
 
 @section('content')
-<div class="w-full max-w-2xl mx-auto rounded-2xl border border-gray-800 bg-gray-900 p-8 shadow-xl">
+<x-page-header
+    title="Tambah Komunitas"
+    description="Masukkan informasi komunitas dan tentukan ketuanya."
+/>
 
-    <h2 class="text-2xl font-bold">Tambah Komunitas</h2>
+<div class="max-w-2xl">
+    <div class="rounded-xl border border-gray-800 bg-gray-900 p-6 sm:p-8">
+        @if (session('success'))
+            <x-alert type="success">{{ session('success') }}</x-alert>
+        @endif
 
-    <p class="mt-2 mb-8 text-gray-400">
-        Masukkan informasi komunitas dan tentukan Ketua.
-    </p>
-
-    @if(session('success'))
-        <div class="mb-6 rounded-lg border border-green-800 bg-green-950/50 p-4 text-sm text-green-300">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    @if($errors->any())
-        <div class="mb-6 rounded-lg border border-red-800 bg-red-950/50 p-4 text-red-300">
-            <ul class="list-disc pl-5">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
-
-    @if($users->isEmpty())
-        <div class="rounded-lg border border-yellow-800 bg-yellow-950/40 p-4 text-sm text-yellow-200">
-            Belum ada member yang bisa dijadikan Ketua karena semua member sudah tergabung di komunitas lain.
-            Buat akun calon Ketua baru di bawah ini, lalu pilih akun tersebut sebagai Ketua.
-        </div>
-    @else
-        <form action="{{ route('admin.communities.store') }}" method="POST">
-            @csrf
-
-            <div class="mb-5">
-                <label class="mb-2 block font-medium">Nama Komunitas</label>
-
-                <input
-                    type="text"
-                    name="name"
-                    value="{{ old('name') }}"
-                    required
-                    placeholder="Contoh: Unknown Rider Bandung"
-                    class="w-full rounded-lg border border-gray-700 bg-gray-950 p-3 text-white focus:border-blue-500 focus:outline-none"
-                >
-            </div>
-
-            <div class="mb-5">
-                <label class="mb-2 block font-medium">Deskripsi</label>
-
-                <textarea
-                    name="description"
-                    rows="4"
-                    placeholder="Deskripsi komunitas..."
-                    class="w-full rounded-lg border border-gray-700 bg-gray-950 p-3 text-white focus:border-blue-500 focus:outline-none"
-                >{{ old('description') }}</textarea>
-            </div>
-
-            <div class="mb-5">
-                <label class="mb-2 block font-medium">Logo (Opsional)</label>
-
-                <input
-                    type="text"
-                    name="logo"
-                    value="{{ old('logo') }}"
-                    placeholder="Path atau URL logo"
-                    class="w-full rounded-lg border border-gray-700 bg-gray-950 p-3 text-white focus:border-blue-500 focus:outline-none"
-                >
-            </div>
-
-            <div class="mb-8">
-                <label class="mb-2 block font-medium">Pilih Ketua Komunitas</label>
-
-                <select
-                    name="leader_id"
-                    required
-                    class="w-full rounded-lg border border-gray-700 bg-gray-950 p-3 text-white focus:border-blue-500 focus:outline-none"
-                >
-                    <option value="">-- Pilih Pengguna --</option>
-
-                    @foreach($users as $user)
-                        <option
-                            value="{{ $user->id }}"
-                            @selected((string) old('leader_id', session('created_user_id')) === (string) $user->id)
-                        >
-                            {{ $user->name }} ({{ $user->email }})
-                        </option>
+        @if ($errors->any())
+            <x-alert type="error">
+                <ul class="space-y-1">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
                     @endforeach
-                </select>
+                </ul>
+            </x-alert>
+        @endif
 
-                <p class="mt-2 text-sm text-gray-400">
-                    Hanya pengguna dengan role Member yang dapat dipilih.
-                </p>
-            </div>
-
-            <div class="flex flex-col sm:flex-row gap-3">
-                <button
-                    type="submit"
-                    class="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
-                >
-                    Simpan Komunitas
-                </button>
-
-                <a
-                    href="{{ route('admin.communities.index') }}"
-                    class="rounded-lg bg-gray-700 px-6 py-3 text-center font-semibold text-white hover:bg-gray-600"
-                >
-                    Batal
-                </a>
-            </div>
-        </form>
-    @endif
-
-    <div class="mt-8 border-t border-gray-800 pt-6">
-        <details class="rounded-xl border border-gray-700 bg-gray-950/40 p-4" @if($users->isEmpty()) open @endif>
-            <summary class="cursor-pointer font-semibold text-blue-400 hover:text-blue-300">
-                + Buat akun calon Ketua baru
-            </summary>
-
-            <p class="mt-3 text-sm text-gray-400">
-                Akun baru otomatis ber-role Member dan belum tergabung ke komunitas mana pun.
-                Setelah dibuat, akun langsung muncul di pilihan Ketua.
-            </p>
-
-            <form action="{{ route('admin.leader-accounts.store') }}" method="POST" class="mt-5 space-y-5">
+        @if ($users->isEmpty())
+            <x-alert type="warning">
+                Belum ada member yang bisa dijadikan Ketua karena semua member sudah tergabung di komunitas lain.
+                Buat akun calon Ketua baru di bawah ini, lalu pilih akun tersebut sebagai Ketua.
+            </x-alert>
+        @else
+            <form action="{{ route('admin.communities.store') }}" method="POST" class="space-y-5">
                 @csrf
 
                 <div>
-                    <label for="leader_name" class="mb-2 block font-medium">Nama lengkap</label>
-
+                    <label for="name" class="mb-1.5 block text-sm font-medium text-gray-300">Nama Komunitas</label>
                     <input
-                        id="leader_name"
-                        name="leader_name"
+                        id="name"
                         type="text"
-                        value="{{ old('leader_name') }}"
-                        autocomplete="name"
+                        name="name"
+                        value="{{ old('name') }}"
                         required
-                        placeholder="Nama calon Ketua"
-                        class="w-full rounded-lg border border-gray-700 bg-gray-950 p-3 text-white focus:border-blue-500 focus:outline-none"
+                        placeholder="Contoh: Unknown Rider Bandung"
+                        class="w-full rounded-lg border border-gray-800 bg-gray-950 px-3.5 py-2.5 text-sm text-gray-100 placeholder:text-gray-600 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                     >
-
-                    @error('leader_name')
-                        <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
-                    @enderror
                 </div>
 
                 <div>
-                    <label for="leader_email" class="mb-2 block font-medium">Email</label>
+                    <label for="description" class="mb-1.5 block text-sm font-medium text-gray-300">Deskripsi</label>
+                    <textarea
+                        id="description"
+                        name="description"
+                        rows="4"
+                        placeholder="Deskripsi komunitas..."
+                        class="w-full rounded-lg border border-gray-800 bg-gray-950 px-3.5 py-2.5 text-sm text-gray-100 placeholder:text-gray-600 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                    >{{ old('description') }}</textarea>
+                </div>
 
+                <div>
+                    <label for="logo" class="mb-1.5 block text-sm font-medium text-gray-300">
+                        Logo <span class="font-normal text-gray-500">(opsional)</span>
+                    </label>
                     <input
-                        id="leader_email"
-                        name="leader_email"
-                        type="email"
-                        value="{{ old('leader_email') }}"
-                        autocomplete="email"
+                        id="logo"
+                        type="text"
+                        name="logo"
+                        value="{{ old('logo') }}"
+                        placeholder="Path atau URL logo"
+                        class="w-full rounded-lg border border-gray-800 bg-gray-950 px-3.5 py-2.5 text-sm text-gray-100 placeholder:text-gray-600 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                    >
+                </div>
+
+                <div>
+                    <label for="leader_id" class="mb-1.5 block text-sm font-medium text-gray-300">Pilih Ketua Komunitas</label>
+                    <select
+                        id="leader_id"
+                        name="leader_id"
                         required
-                        placeholder="ketua@email.com"
-                        class="w-full rounded-lg border border-gray-700 bg-gray-950 p-3 text-white focus:border-blue-500 focus:outline-none"
+                        class="w-full rounded-lg border border-gray-800 bg-gray-950 px-3.5 py-2.5 text-sm text-gray-100 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                     >
+                        <option value="">-- Pilih Pengguna --</option>
 
-                    @error('leader_email')
-                        <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
-                    @enderror
+                        @foreach ($users as $user)
+                            <option
+                                value="{{ $user->id }}"
+                                @selected((string) old('leader_id', session('created_user_id')) === (string) $user->id)
+                            >
+                                {{ $user->name }} ({{ $user->email }})
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="mt-1.5 text-xs text-gray-500">
+                        Hanya pengguna dengan role Member yang dapat dipilih.
+                    </p>
                 </div>
 
-                <div>
-                    <label for="leader_phone" class="mb-2 block font-medium">Nomor telepon (opsional)</label>
+                <div class="flex flex-col gap-2 pt-1 sm:flex-row">
+                    <button type="submit"
+                            class="rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-500">
+                        Simpan Komunitas
+                    </button>
 
-                    <input
-                        id="leader_phone"
-                        name="leader_phone"
-                        type="tel"
-                        value="{{ old('leader_phone') }}"
-                        autocomplete="tel"
-                        placeholder="08xxxxxxxxxx"
-                        class="w-full rounded-lg border border-gray-700 bg-gray-950 p-3 text-white focus:border-blue-500 focus:outline-none"
-                    >
-
-                    @error('leader_phone')
-                        <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
-                    @enderror
+                    <a href="{{ route('admin.communities.index') }}"
+                       class="rounded-lg border border-gray-700 bg-gray-800/60 px-4 py-2.5 text-center text-sm font-semibold text-gray-200 transition hover:bg-gray-800">
+                        Batal
+                    </a>
                 </div>
+            </form>
+        @endif
+    </div>
 
-                <div>
-                    <label for="leader_password" class="mb-2 block font-medium">Password</label>
+    <div class="mt-8 border-t border-gray-800 pt-6">
+        <details class="rounded-xl border border-gray-800 bg-gray-900" @if ($users->isEmpty()) open @endif>
+            <summary class="cursor-pointer px-4 py-3 text-sm font-semibold text-orange-400 transition hover:text-orange-300">
+                + Buat akun calon Ketua baru
+            </summary>
 
-                    <input
+            <div class="border-t border-gray-800 p-4 sm:p-5">
+                <p class="text-sm text-gray-400">
+                    Akun baru otomatis ber-role Member dan belum tergabung ke komunitas mana pun.
+                    Setelah dibuat, akun langsung muncul di pilihan Ketua.
+                </p>
+
+                <form action="{{ route('admin.leader-accounts.store') }}" method="POST" class="mt-5 space-y-5">
+                    @csrf
+
+                    <div>
+                        <label for="leader_name" class="mb-1.5 block text-sm font-medium text-gray-300">Nama lengkap</label>
+                        <input
+                            id="leader_name"
+                            name="leader_name"
+                            type="text"
+                            value="{{ old('leader_name') }}"
+                            autocomplete="name"
+                            required
+                            placeholder="Nama calon Ketua"
+                            class="w-full rounded-lg border border-gray-800 bg-gray-950 px-3.5 py-2.5 text-sm text-gray-100 placeholder:text-gray-600 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                        >
+
+                        @error('leader_name')
+                            <p class="mt-1.5 text-sm text-red-400">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="leader_email" class="mb-1.5 block text-sm font-medium text-gray-300">Email</label>
+                        <input
+                            id="leader_email"
+                            name="leader_email"
+                            type="email"
+                            value="{{ old('leader_email') }}"
+                            autocomplete="email"
+                            required
+                            placeholder="ketua@email.com"
+                            class="w-full rounded-lg border border-gray-800 bg-gray-950 px-3.5 py-2.5 text-sm text-gray-100 placeholder:text-gray-600 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                        >
+
+                        @error('leader_email')
+                            <p class="mt-1.5 text-sm text-red-400">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="leader_phone" class="mb-1.5 block text-sm font-medium text-gray-300">
+                            Nomor telepon <span class="font-normal text-gray-500">(opsional)</span>
+                        </label>
+                        <input
+                            id="leader_phone"
+                            name="leader_phone"
+                            type="tel"
+                            value="{{ old('leader_phone') }}"
+                            autocomplete="tel"
+                            placeholder="08xxxxxxxxxx"
+                            class="w-full rounded-lg border border-gray-800 bg-gray-950 px-3.5 py-2.5 text-sm text-gray-100 placeholder:text-gray-600 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                        >
+
+                        @error('leader_phone')
+                            <p class="mt-1.5 text-sm text-red-400">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <x-password-field
                         id="leader_password"
                         name="leader_password"
-                        type="password"
+                        label="Password"
                         autocomplete="new-password"
                         minlength="12"
-                        required
                         placeholder="Minimal 12 karakter"
-                        class="w-full rounded-lg border border-gray-700 bg-gray-950 p-3 text-white focus:border-blue-500 focus:outline-none"
                     >
+                        <p class="mt-1.5 text-xs text-gray-500">
+                            Minimal 12 karakter, kombinasi huruf besar/kecil, angka, dan simbol.
+                        </p>
+                    </x-password-field>
 
-                    <p class="mt-1 text-sm text-gray-400">
-                        Minimal 12 karakter, kombinasi huruf besar/kecil, angka, dan simbol.
-                    </p>
-
-                    @error('leader_password')
-                        <p class="mt-1 text-sm text-red-400">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div>
-                    <label for="leader_password_confirmation" class="mb-2 block font-medium">Konfirmasi password</label>
-
-                    <input
+                    <x-password-field
                         id="leader_password_confirmation"
                         name="leader_password_confirmation"
-                        type="password"
+                        label="Konfirmasi password"
                         autocomplete="new-password"
                         minlength="12"
-                        required
                         placeholder="Ulangi password"
-                        class="w-full rounded-lg border border-gray-700 bg-gray-950 p-3 text-white focus:border-blue-500 focus:outline-none"
-                    >
-                </div>
+                    />
 
-                <button
-                    type="submit"
-                    class="rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white hover:bg-blue-700"
-                >
-                    Buat Akun Calon Ketua
-                </button>
-            </form>
+                    <button
+                        type="submit"
+                        class="rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-500"
+                    >
+                        Buat Akun Calon Ketua
+                    </button>
+                </form>
+            </div>
         </details>
     </div>
 
-    @if($users->isEmpty())
+    @if ($users->isEmpty())
         <div class="mt-8">
             <a href="{{ route('admin.communities.index') }}"
-               class="text-blue-400 hover:text-blue-300">
+               class="text-sm text-gray-400 transition hover:text-white">
                 ← Kembali ke Manajemen Komunitas
             </a>
         </div>
     @endif
-
 </div>
 @endsection

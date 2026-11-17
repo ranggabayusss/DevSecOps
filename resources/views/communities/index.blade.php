@@ -1,133 +1,74 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daftar Komunitas - Unknown Rider</title>
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
+@extends('layouts.app')
 
-<body class="min-h-screen bg-gray-950 text-white">
+@section('title', 'Daftar Komunitas')
 
-    <header class="border-b border-orange-500 bg-black px-6 py-5">
-        <h1 class="text-2xl font-bold text-orange-500">
-            UNKNOWN RIDER
-        </h1>
-    </header>
+@section('content')
+<x-page-header
+    title="Daftar Komunitas"
+    description="Temukan komunitas dan ajukan permintaan bergabung."
+/>
 
-    <main class="mx-auto max-w-5xl px-6 py-10">
-
-        <h2 class="mb-2 text-3xl font-bold">
-            Daftar Komunitas
-        </h2>
-
-        <p class="mb-8 text-gray-400">
-            Temukan komunitas dan ajukan permintaan bergabung.
-        </p>
-
-        @if (session('success'))
-            <div class="mb-5 rounded-lg bg-green-900/50 p-4 text-green-300">
-                {{ session('success') }}
-            </div>
-        @endif
-
-        @if (session('error'))
-            <div class="mb-5 rounded-lg bg-red-900/50 p-4 text-red-300">
-                {{ session('error') }}
-            </div>
-        @endif
-
-        @forelse ($communities as $community)
-
-            <div class="mb-5 rounded-xl border border-gray-700 bg-gray-900 p-6">
-
-                <h3 class="text-xl font-bold text-orange-500">
-                    {{ $community->name }}
-                </h3>
-
-                <p class="mt-3 text-gray-300">
-                    {{ $community->description ?? 'Tidak ada deskripsi.' }}
-                </p>
-
-                <div class="mt-4 space-y-2 text-sm text-gray-400">
-                    <p>
-                        Ketua:
-                        {{ $community->leader->name ?? '-' }}
-                    </p>
-
-                    <p>
-                        Jumlah anggota:
-                        {{ $community->members_count }}
-                    </p>
-                </div>
-
-                
-                {{-- Status keanggotaan dan tombol pengajuan --}}
-@if ($userMembership)
-
-    @if ($userMembership->community_id == $community->id)
-
-        @if ($userMembership->status === 'active')
-            <span class="mt-5 inline-block rounded-lg bg-green-900 px-4 py-3 text-green-300">
-                Sudah Bergabung
-            </span>
-        @else
-            <span class="mt-5 inline-block rounded-lg bg-yellow-900 px-4 py-3 text-yellow-300">
-                Menunggu Persetujuan
-            </span>
-        @endif
-
-    @else
-
-        <span class="mt-5 inline-block rounded-lg bg-gray-700 px-4 py-3 text-gray-300">
-            Sudah Memiliki Komunitas
-        </span>
-
-    @endif
-
-@else
-
-    <form
-        action="{{ route('communities.join', $community->id) }}"
-        method="POST"
-        class="mt-5"
-    >
-        @csrf
-
-        <button
-            type="submit"
-            class="rounded-lg bg-blue-600 px-5 py-3 font-semibold hover:bg-blue-700"
-        >
-            Ajukan Bergabung
-        </button>
-    </form>
-
+@if (session('success'))
+    <x-alert type="success">{{ session('success') }}</x-alert>
 @endif
 
-            </div>
+@if (session('error'))
+    <x-alert type="error">{{ session('error') }}</x-alert>
+@endif
 
-        @empty
+@if ($communities->isEmpty())
+    <x-empty-state
+        title="Belum ada komunitas"
+        description="Saat ini belum tersedia komunitas untuk bergabung."
+    />
+@else
+    <div class="grid gap-4 sm:grid-cols-2">
+        @foreach ($communities as $community)
+            <article class="flex flex-col rounded-xl border border-gray-800 bg-gray-900 p-5">
+                <h2 class="text-lg font-semibold text-white">{{ $community->name }}</h2>
 
-            <div class="rounded-xl border border-gray-700 bg-gray-900 p-8 text-center">
-                <h3 class="text-xl font-bold">
-                    Belum Ada Komunitas
-                </h3>
-
-                <p class="mt-2 text-gray-400">
-                    Saat ini belum tersedia komunitas untuk bergabung.
+                <p class="mt-2 flex-1 text-sm leading-relaxed text-gray-400">
+                    {{ $community->description ?? 'Belum ada deskripsi.' }}
                 </p>
-            </div>
 
-        @endforelse
+                <div class="mt-4 flex items-center justify-between gap-3 border-t border-gray-800 pt-4">
+                    <p class="text-xs text-gray-500">
+                        Ketua
+                        <span class="ml-1 text-gray-300">{{ $community->leader->name ?? '-' }}</span>
+                        <span class="mx-1.5 text-gray-700">|</span>
+                        {{ $community->members_count }} anggota
+                    </p>
 
-        <div class="mt-6">{{ $communities->links() }}</div>
+                    @if ($userMembership)
+                        @if ($userMembership->community_id == $community->id)
+                            @if ($userMembership->status === 'active')
+                                <span class="inline-flex items-center rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300">
+                                    Sudah bergabung
+                                </span>
+                            @else
+                                <span class="inline-flex items-center rounded-full border border-amber-500/30 bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-300">
+                                    Menunggu persetujuan
+                                </span>
+                            @endif
+                        @else
+                            <span class="inline-flex items-center rounded-full border border-gray-700 bg-gray-800 px-3 py-1 text-xs font-medium text-gray-400">
+                                Sudah punya komunitas
+                            </span>
+                        @endif
+                    @else
+                        <form action="{{ route('communities.join', $community->id) }}" method="POST">
+                            @csrf
+                            <button type="submit"
+                                    class="rounded-lg bg-orange-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-orange-500">
+                                Ajukan Bergabung
+                            </button>
+                        </form>
+                    @endif
+                </div>
+            </article>
+        @endforeach
+    </div>
 
-        <a href="{{ route('dashboard') }}"
-           class="mt-5 inline-block text-blue-400 hover:text-blue-300">
-            &larr; Kembali ke Dashboard
-        </a>
-
-    </main>
-
-</body>
-</html>
+    <div class="mt-6">{{ $communities->links() }}</div>
+@endif
+@endsection
