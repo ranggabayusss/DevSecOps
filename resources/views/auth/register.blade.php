@@ -66,36 +66,27 @@
             >
         </div>
 
-        <div>
-            <label for="password" class="mb-1.5 block text-sm font-medium text-gray-300">Password</label>
-            <input
-                id="password"
-                name="password"
-                type="password"
-                autocomplete="new-password"
-                minlength="12"
-                required
-                placeholder="Minimal 12 karakter"
-                class="w-full rounded-lg border border-gray-800 bg-gray-950 px-3.5 py-2.5 text-sm text-gray-100 placeholder:text-gray-600 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
-            >
+        <x-password-field
+            id="password"
+            name="password"
+            label="Password"
+            autocomplete="new-password"
+            minlength="8"
+            placeholder="Minimal 8 karakter"
+        >
             <p class="mt-1.5 text-xs text-gray-500">
-                Gunakan huruf besar, huruf kecil, angka, dan simbol.
+                Minimal 8 karakter, gunakan huruf besar, huruf kecil, angka, dan simbol.
             </p>
-        </div>
+        </x-password-field>
 
-        <div>
-            <label for="password_confirmation" class="mb-1.5 block text-sm font-medium text-gray-300">Konfirmasi password</label>
-            <input
-                id="password_confirmation"
-                name="password_confirmation"
-                type="password"
-                autocomplete="new-password"
-                minlength="12"
-                required
-                placeholder="Ulangi password"
-                class="w-full rounded-lg border border-gray-800 bg-gray-950 px-3.5 py-2.5 text-sm text-gray-100 placeholder:text-gray-600 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
-            >
-        </div>
+        <x-password-field
+            id="password_confirmation"
+            name="password_confirmation"
+            label="Konfirmasi password"
+            autocomplete="new-password"
+            minlength="8"
+            placeholder="Ulangi password"
+        />
 
         <button type="submit"
                 class="w-full rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/60">

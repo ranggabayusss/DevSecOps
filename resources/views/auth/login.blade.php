@@ -37,18 +37,13 @@
             >
         </div>
 
-        <div>
-            <label for="password" class="mb-1.5 block text-sm font-medium text-gray-300">Password</label>
-            <input
-                id="password"
-                name="password"
-                type="password"
-                autocomplete="current-password"
-                required
-                placeholder="Masukkan password"
-                class="w-full rounded-lg border border-gray-800 bg-gray-950 px-3.5 py-2.5 text-sm text-gray-100 placeholder:text-gray-600 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
-            >
-        </div>
+        <x-password-field
+            id="password"
+            name="password"
+            label="Password"
+            autocomplete="current-password"
+            placeholder="Masukkan password"
+        />
 
         <label class="flex items-center gap-2 text-sm text-gray-400">
             <input
