@@ -1,39 +1,38 @@
-@extends('layouts.guest')
+@extends('layouts.app')
 
 @section('title', 'Dashboard Admin')
 
 @section('content')
-<div class="rounded-2xl border border-gray-800 bg-gray-900 p-8 shadow-xl">
-    <h2 class="text-2xl font-bold">Dashboard Admin</h2>
+<x-page-header
+    title="Dashboard Admin"
+    description="Kelola komunitas, ketua, dan anggota Unknown Rider."
+/>
 
-    <p class="mt-3 text-gray-400">
-        Selamat datang, {{ Auth::user()->name }}.
-    </p>
+<div class="grid gap-4 sm:grid-cols-2">
+    <a href="{{ route('admin.communities.index') }}"
+       class="group rounded-xl border border-gray-800 bg-gray-900 p-5 transition hover:border-orange-500/60">
+        <h2 class="font-semibold text-white transition group-hover:text-orange-400">
+            Manajemen Komunitas
+        </h2>
+        <p class="mt-1.5 text-sm text-gray-400">
+            Buat komunitas baru, tetapkan ketua, dan lihat ringkasan anggota.
+        </p>
+        <span class="mt-4 inline-block text-sm font-medium text-orange-400">
+            Kelola komunitas &rarr;
+        </span>
+    </a>
 
-    <div class="mt-6 grid grid-cols-1 gap-4">
-        <a href="{{ route('admin.communities.index') }}"
-            class="block rounded-lg bg-gray-800 p-4 hover:bg-gray-700">
-            <h3 class="font-semibold">Manajemen Komunitas</h3>
-            <p class="mt-1 text-sm text-gray-400">
-                Membuat dan mengelola komunitas.
-            </p>
-        </a>
-
-        <a href="{{ route('admin.communities.select') }}"
-           class="rounded-lg bg-gray-800 p-4 hover:bg-gray-700">
-            <h3 class="font-semibold">Daftar Komunitas</h3>
-            <p class="mt-1 text-sm text-gray-400">
-                Pilih komunitas untuk melihat dan mengelola anggotanya.
-            </p>
-        </a>
-    </div>
-
-    <form action="{{ route('logout') }}" method="POST" class="mt-6">
-        @csrf
-        <button type="submit"
-            class="rounded-lg bg-red-600 px-5 py-3 font-semibold hover:bg-red-700">
-            Logout
-        </button>
-    </form>
+    <a href="{{ route('admin.communities.select') }}"
+       class="group rounded-xl border border-gray-800 bg-gray-900 p-5 transition hover:border-orange-500/60">
+        <h2 class="font-semibold text-white transition group-hover:text-orange-400">
+            Daftar Komunitas
+        </h2>
+        <p class="mt-1.5 text-sm text-gray-400">
+            Pilih komunitas untuk melihat dan mengelola anggotanya.
+        </p>
+        <span class="mt-4 inline-block text-sm font-medium text-orange-400">
+            Pilih komunitas &rarr;
+        </span>
+    </a>
 </div>
 @endsection

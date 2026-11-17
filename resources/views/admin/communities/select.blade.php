@@ -1,62 +1,52 @@
-@extends('layouts.guest')
+@extends('layouts.app')
 
 @section('title', 'Daftar Komunitas')
 
 @section('content')
-<div class="w-full max-w-5xl mx-auto rounded-2xl border border-gray-800 bg-gray-900 p-8 shadow-xl">
-
-    <div class="mb-8">
-        <h2 class="text-2xl font-bold">Daftar Komunitas</h2>
-        <p class="mt-2 text-gray-400">
-            Pilih komunitas untuk melihat dan mengelola anggotanya.
-        </p>
-    </div>
-
-    @if($communities->isEmpty())
-        <div class="rounded-xl border border-gray-700 bg-gray-800 p-8 text-center">
-            <h3 class="text-lg font-semibold">Belum Ada Komunitas</h3>
-            <p class="mt-2 text-gray-400">
-                Silakan buat komunitas terlebih dahulu melalui Manajemen Komunitas.
-            </p>
-        </div>
-    @else
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            @foreach($communities as $community)
-                <a href="{{ route('admin.communities.members.index', $community->id) }}"
-                   class="block rounded-xl border border-gray-700 bg-gray-800 p-5 transition hover:border-orange-500">
-                    <h3 class="text-lg font-bold text-orange-400">
-                        {{ $community->name }}
-                    </h3>
-
-                    <p class="mt-2 text-sm text-gray-400">
-                        Ketua: {{ $community->leader?->name ?? 'Belum ditentukan' }}
-                    </p>
-
-                    <p class="text-sm text-gray-400">
-                        {{ $community->members_count }} anggota
-                    </p>
-
-                    <span class="mt-4 inline-block text-sm font-semibold text-blue-400">
-                        Kelola Anggota &rarr;
-                    </span>
-                </a>
-            @endforeach
-        </div>
-
-        <div class="mt-6">{{ $communities->links() }}</div>
-    @endif
-
-    <div class="mt-8 flex items-center justify-between gap-4">
-        <a href="{{ route('admin.dashboard') }}"
-           class="text-blue-400 hover:text-blue-300">
-            ← Kembali ke Dashboard Admin
-        </a>
-
+<x-page-header
+    title="Daftar Komunitas"
+    description="Pilih komunitas untuk melihat dan mengelola anggotanya."
+>
+    <x-slot:actions>
         <a href="{{ route('admin.communities.index') }}"
-           class="text-blue-400 hover:text-blue-300">
-            Manajemen Komunitas →
+           class="rounded-lg border border-gray-700 bg-gray-800/60 px-4 py-2.5 text-sm font-semibold text-gray-200 transition hover:bg-gray-800">
+            Manajemen Komunitas
         </a>
+    </x-slot:actions>
+</x-page-header>
+
+@if ($communities->isEmpty())
+    <x-empty-state
+        title="Belum ada komunitas"
+        description="Silakan buat komunitas terlebih dahulu melalui Manajemen Komunitas."
+    >
+        <a href="{{ route('admin.communities.create') }}"
+           class="mt-5 inline-block rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-500">
+            Buat Komunitas
+        </a>
+    </x-empty-state>
+@else
+    <div class="grid gap-4 sm:grid-cols-2">
+        @foreach ($communities as $community)
+            <a href="{{ route('admin.communities.members.index', $community->id) }}"
+               class="group flex flex-col rounded-xl border border-gray-800 bg-gray-900 p-5 transition hover:border-orange-500/60">
+                <h2 class="font-semibold text-white transition group-hover:text-orange-400">
+                    {{ $community->name }}
+                </h2>
+
+                <p class="mt-1.5 text-sm text-gray-400">
+                    Ketua: {{ $community->leader?->name ?? 'Belum ditentukan' }}
+                    <span class="mx-1.5 text-gray-700">|</span>
+                    {{ $community->members_count }} anggota
+                </p>
+
+                <span class="mt-4 text-sm font-medium text-orange-400">
+                    Kelola Anggota &rarr;
+                </span>
+            </a>
+        @endforeach
     </div>
 
-</div>
+    <div class="mt-6">{{ $communities->links() }}</div>
+@endif
 @endsection

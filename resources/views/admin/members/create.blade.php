@@ -1,62 +1,43 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tambah Anggota - Unknown Rider</title>
-    @vite(['resources/css/app.css'])
-</head>
-<body class="min-h-screen bg-gray-950 text-white">
+@extends('layouts.app')
 
-    <header class="border-b border-orange-500 bg-black px-6 py-5">
-        <h1 class="text-2xl font-bold text-orange-500">
-            UNKNOWN RIDER
-        </h1>
-    </header>
+@section('title', 'Tambah Anggota')
 
-    <main class="mx-auto max-w-2xl px-6 py-12">
+@section('content')
+<x-page-header
+    title="Tambah Anggota"
+    :description="'Komunitas '.$community->name"
+>
+    <x-slot:actions>
+        <a href="{{ route('admin.communities.members.index', $community->id) }}"
+           class="rounded-lg border border-gray-700 bg-gray-800/60 px-4 py-2.5 text-sm font-semibold text-gray-200 transition hover:bg-gray-800">
+            Kembali
+        </a>
+    </x-slot:actions>
+</x-page-header>
 
-        <div class="rounded-xl border border-gray-700 bg-gray-900 p-8">
+<div class="max-w-2xl">
+    <div class="rounded-xl border border-gray-800 bg-gray-900 p-6 sm:p-8">
+        @if ($errors->any())
+            <x-alert type="error">
+                <ul class="space-y-1">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </x-alert>
+        @endif
 
-            <h2 class="text-3xl font-bold">
-                Tambah Anggota
-            </h2>
+        @if ($users->isEmpty())
+            <x-empty-state
+                title="Tidak ada pengguna tersedia"
+                description="Semua pengguna dengan role Member sudah bergabung atau belum tersedia."
+            />
+        @else
+            <form action="{{ route('admin.communities.members.store', $community->id) }}" method="POST" class="space-y-5">
+                @csrf
 
-            <p class="mt-2 text-gray-400">
-                Komunitas: {{ $community->name }}
-            </p>
-
-            @if ($errors->any())
-                <div class="mt-5 rounded-lg bg-red-900/50 p-4 text-red-300">
-                    <ul class="list-inside list-disc">
-                        @foreach ($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-
-            @if ($users->isEmpty())
-                <div class="mt-7 rounded-lg bg-gray-800 p-6 text-center">
-                    <h3 class="font-semibold">
-                        Tidak Ada Pengguna Tersedia
-                    </h3>
-
-                    <p class="mt-2 text-gray-400">
-                        Semua pengguna dengan role Member sudah bergabung
-                        atau belum tersedia.
-                    </p>
-                </div>
-            @else
-                <form
-                    action="{{ route('admin.communities.members.store', $community->id) }}"
-                    method="POST"
-                    class="mt-7"
-                >
-                    @csrf
-
-                    <label for="user_id"
-                        class="mb-2 block font-semibold">
+                <div>
+                    <label for="user_id" class="mb-1.5 block text-sm font-medium text-gray-300">
                         Pilih Anggota
                     </label>
 
@@ -64,41 +45,31 @@
                         name="user_id"
                         id="user_id"
                         required
-                        class="w-full rounded-lg border border-gray-700 bg-gray-950 px-4 py-3 text-white"
+                        class="w-full rounded-lg border border-gray-800 bg-gray-950 px-3.5 py-2.5 text-sm text-gray-100 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                     >
                         <option value="">-- Pilih Pengguna --</option>
 
                         @foreach ($users as $user)
-                            <option
-                                value="{{ $user->id }}"
-                                @selected(old('user_id') == $user->id)
-                            >
+                            <option value="{{ $user->id }}" @selected(old('user_id') == $user->id)>
                                 {{ $user->name }} ({{ $user->email }})
                             </option>
                         @endforeach
                     </select>
+                </div>
 
-                    <div class="mt-7 flex flex-wrap gap-3">
-                        <button
-                            type="submit"
-                            class="rounded-lg bg-blue-600 px-6 py-3 font-semibold hover:bg-blue-700"
-                        >
-                            Tambahkan Anggota
-                        </button>
+                <div class="flex flex-col gap-2 pt-1 sm:flex-row">
+                    <button type="submit"
+                            class="rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-500">
+                        Tambahkan Anggota
+                    </button>
 
-                        <a
-                            href="{{ route('admin.communities.members.index', $community->id) }}"
-                            class="rounded-lg bg-gray-700 px-6 py-3 font-semibold hover:bg-gray-600"
-                        >
-                            Batal
-                        </a>
-                    </div>
-                </form>
-            @endif
-
-        </div>
-
-    </main>
-
-</body>
-</html>
+                    <a href="{{ route('admin.communities.members.index', $community->id) }}"
+                       class="rounded-lg border border-gray-700 bg-gray-800/60 px-4 py-2.5 text-center text-sm font-semibold text-gray-200 transition hover:bg-gray-800">
+                        Batal
+                    </a>
+                </div>
+            </form>
+        @endif
+    </div>
+</div>
+@endsection

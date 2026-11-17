@@ -29,3 +29,10 @@ Thumbs.db
 
 database/backups/
 *.sql
+
+# Generated security scan artifacts (never commit scan output)
+/zap-report.html
+/zap-report.json
+/zap-report.xml
+/zap-report.md
+/docs/security/zap-report.*
