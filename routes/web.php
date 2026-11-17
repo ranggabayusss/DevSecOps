@@ -1,11 +1,12 @@
 <?php
 
-use App\Http\Controllers\CommunityRequestController;
-use App\Http\Controllers\CommunityJoinController;
-use App\Http\Controllers\MemberController;
-use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CommunityController;
+use App\Http\Controllers\CommunityJoinController;
+use App\Http\Controllers\CommunityRequestController;
+use App\Http\Controllers\MemberController;
+use App\Models\Community;
 use Illuminate\Support\Facades\Route;
 
 // Authentication
@@ -25,32 +26,32 @@ Route::middleware('guest')->group(function () {
         ->name('login.store');
 });
 
-    Route::post('/logout', [AuthController::class, 'logout'])
-        ->middleware('auth')
-        ->name('logout');
+Route::post('/logout', [AuthController::class, 'logout'])
+    ->middleware('auth')
+    ->name('logout');
 
-    // Dashboard
-    Route::get('/', function () {
-        return redirect()->route('dashboard');
-    });
+// Dashboard
+Route::get('/', function () {
+    return redirect()->route('dashboard');
+});
 
-    Route::get('/dashboard', function () {
-        $user = auth()->user();
+Route::get('/dashboard', function () {
+    $user = auth()->user();
 
-        $ledCommunity = null;
+    $ledCommunity = null;
 
-        if ($user->role === 'ketua') {
-            $ledCommunity = \App\Models\Community::where(
-                'leader_id',
-                $user->id
-            )->first();
-        }
+    if ($user->role === 'ketua') {
+        $ledCommunity = Community::where(
+            'leader_id',
+            $user->id
+        )->first();
+    }
 
     return view('dashboard', compact('ledCommunity'));
-    })->middleware('auth')->name('dashboard');
+})->middleware('auth')->name('dashboard');
 
 // Member: melihat dan mengajukan bergabung ke komunitas
-    Route::middleware('auth')->group(function () {
+Route::middleware('auth')->group(function () {
     Route::get('/communities', [CommunityJoinController::class, 'index'])
         ->name('communities.index');
 
@@ -94,6 +95,10 @@ Route::middleware(['auth', 'role:admin'])
 
         Route::get('/communities/create', [CommunityController::class, 'create'])
             ->name('communities.create');
+
+        Route::post('/leader-accounts', [AdminController::class, 'storeLeaderAccount'])
+            ->middleware('throttle:admin-actions')
+            ->name('leader-accounts.store');
 
         Route::post('/communities', [CommunityController::class, 'store'])
             ->middleware('throttle:admin-actions')
