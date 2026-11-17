@@ -1,84 +1,77 @@
-@extends('layouts.guest')
+@extends('layouts.app')
 
 @section('title', 'Manajemen Komunitas')
 
 @section('content')
-<div class="w-full max-w-5xl mx-auto rounded-2xl border border-gray-800 bg-gray-900 p-8 shadow-xl">
-
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <div>
-            <h2 class="text-2xl font-bold">Manajemen Komunitas</h2>
-            <p class="mt-2 text-gray-400">
-                Kelola komunitas dan Ketua Unknown Rider.
-            </p>
-        </div>
-
+<x-page-header
+    title="Manajemen Komunitas"
+    description="Kelola komunitas dan ketua Unknown Rider."
+>
+    <x-slot:actions>
         <a href="{{ route('admin.communities.create') }}"
-           class="rounded-lg bg-blue-600 px-5 py-3 text-center font-semibold text-white hover:bg-blue-700">
+           class="rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-500">
             + Tambah Komunitas
         </a>
-    </div>
+    </x-slot:actions>
+</x-page-header>
 
-    @if(session('success'))
-        <div class="mb-5 rounded-lg bg-green-900/40 p-4 text-green-300">
-            {{ session('success') }}
-        </div>
-    @endif
+@if (session('success'))
+    <x-alert type="success">{{ session('success') }}</x-alert>
+@endif
 
-    @if($communities->isEmpty())
-        <div class="rounded-xl border border-gray-700 bg-gray-800 p-8 text-center">
-            <h3 class="text-lg font-semibold">Belum Ada Komunitas</h3>
-            <p class="mt-2 text-gray-400">
-                Silakan buat komunitas pertama Unknown Rider.
-            </p>
-        </div>
-    @else
-        <div class="overflow-x-auto">
-            <table class="w-full text-left">
-                <thead class="border-b border-gray-700 text-gray-400">
-                    <tr>
-                        <th class="p-4">Nama Komunitas</th>
-                        <th class="p-4">Ketua</th>
-                        <th class="p-4">Jumlah Anggota</th>
-                        <th class="p-4">Aksi</th>
-                    </tr>
-                </thead>
+@if (session('error'))
+    <x-alert type="error">{{ session('error') }}</x-alert>
+@endif
 
-                <tbody>
-                    @foreach($communities as $community)
-                        <tr class="border-b border-gray-800">
-                            <td class="p-4 font-semibold">
-                                {{ $community->name }}
-                            </td>
-
-                            <td class="p-4">
-                                {{ $community->leader?->name ?? 'Belum ditentukan' }}
-                            </td>
-
-                            <td class="p-4">
-                                {{ $community->members_count }} anggota
-                            </td>
-
-                            <td class="p-4">
-                                <a href="{{ route('admin.communities.members.index', $community->id) }}"
-                                   class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold hover:bg-blue-700">
-                                    Kelola Anggota
-                                </a>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-        <div class="mt-6">{{ $communities->links() }}</div>
-    @endif
-
-    <div class="mt-8">
-        <a href="{{ route('admin.dashboard') }}"
-           class="text-blue-400 hover:text-blue-300">
-            ← Kembali ke Dashboard Admin
+@if ($communities->isEmpty())
+    <x-empty-state
+        title="Belum ada komunitas"
+        description="Silakan buat komunitas pertama Unknown Rider."
+    >
+        <a href="{{ route('admin.communities.create') }}"
+           class="mt-5 inline-block rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-orange-500">
+            Buat Komunitas
         </a>
+    </x-empty-state>
+@else
+    <div class="overflow-x-auto rounded-xl border border-gray-800 bg-gray-900">
+        <table class="w-full text-left">
+            <thead class="border-b border-gray-800 bg-gray-900/60 text-xs uppercase tracking-wider text-gray-500">
+                <tr>
+                    <th class="px-4 py-3 font-medium">Nama Komunitas</th>
+                    <th class="px-4 py-3 font-medium">Ketua</th>
+                    <th class="px-4 py-3 font-medium">Anggota</th>
+                    <th class="px-4 py-3 text-right font-medium">Aksi</th>
+                </tr>
+            </thead>
+
+            <tbody class="divide-y divide-gray-800">
+                @foreach ($communities as $community)
+                    <tr class="hover:bg-gray-800/40">
+                        <td class="px-4 py-3.5 text-sm font-medium text-white">
+                            {{ $community->name }}
+                        </td>
+
+                        <td class="px-4 py-3.5 text-sm text-gray-400">
+                            {{ $community->leader?->name ?? 'Belum ditentukan' }}
+                        </td>
+
+                        <td class="px-4 py-3.5 text-sm text-gray-400">
+                            {{ $community->members_count }} anggota
+                        </td>
+
+                        <td class="px-4 py-3.5 text-right">
+                            <a href="{{ route('admin.communities.members.index', $community->id) }}"
+                               class="inline-block rounded-lg border border-gray-700 px-3 py-1.5 text-xs font-semibold text-gray-300 transition hover:border-gray-600 hover:text-white">
+                                Kelola Anggota
+                            </a>
+                        </td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
     </div>
 
-</div>
+    <div class="mt-6">{{ $communities->links() }}</div>
+@endif
 @endsection

@@ -1,155 +1,96 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Permintaan Bergabung - Unknown Rider</title>
-    @vite(['resources/css/app.css'])
-</head>
+@extends('layouts.app')
 
-<body class="min-h-screen bg-gray-950 text-white">
+@section('title', 'Permintaan Bergabung')
 
-    <header class="border-b border-orange-500 bg-black px-6 py-5">
-        <h1 class="text-2xl font-bold text-orange-500">
-            UNKNOWN RIDER
-        </h1>
-    </header>
+@section('content')
+<x-page-header
+    title="Permintaan Bergabung"
+    :description="'Komunitas '.$community->name.' · Ketua '.($community->leader->name ?? '-')"
+/>
 
-    <main class="mx-auto max-w-6xl px-6 py-10">
+@if (session('success'))
+    <x-alert type="success">{{ session('success') }}</x-alert>
+@endif
 
-        <div class="mb-8">
-            <h2 class="text-3xl font-bold">
-                Permintaan Bergabung
-            </h2>
+@if (session('error'))
+    <x-alert type="error">{{ session('error') }}</x-alert>
+@endif
 
-            <p class="mt-2 text-gray-400">
-                Komunitas: {{ $community->name }}
-            </p>
+@if ($requests->isEmpty())
+    <x-empty-state
+        title="Belum ada permintaan"
+        description="Permintaan bergabung dari calon anggota akan muncul di sini."
+    />
+@else
+    <div class="overflow-x-auto rounded-xl border border-gray-800 bg-gray-900">
+        <table class="w-full text-left">
+            <thead class="border-b border-gray-800 bg-gray-900/60 text-xs uppercase tracking-wider text-gray-500">
+                <tr>
+                    <th class="px-4 py-3 font-medium">No.</th>
+                    <th class="px-4 py-3 font-medium">Nama</th>
+                    <th class="px-4 py-3 font-medium">Email</th>
+                    <th class="px-4 py-3 font-medium">Nomor HP</th>
+                    <th class="px-4 py-3 font-medium">Status</th>
+                    <th class="px-4 py-3 text-right font-medium">Aksi</th>
+                </tr>
+            </thead>
 
-            <p class="text-gray-400">
-                Ketua: {{ $community->leader->name ?? '-' }}
-            </p>
-        </div>
+            <tbody class="divide-y divide-gray-800">
+                @foreach ($requests as $index => $request)
+                    <tr class="hover:bg-gray-800/40">
+                        <td class="px-4 py-3.5 text-sm text-gray-500">
+                            {{ $requests->firstItem() + $index }}
+                        </td>
 
-        @if (session('success'))
-            <div class="mb-5 rounded-lg bg-green-900/50 p-4 text-green-300">
-                {{ session('success') }}
-            </div>
-        @endif
+                        <td class="px-4 py-3.5 text-sm font-medium text-white">
+                            {{ $request->user->name }}
+                        </td>
 
-        @if (session('error'))
-            <div class="mb-5 rounded-lg bg-red-900/50 p-4 text-red-300">
-                {{ session('error') }}
-            </div>
-        @endif
+                        <td class="px-4 py-3.5 text-sm text-gray-400">
+                            {{ $request->user->email }}
+                        </td>
 
-        <div class="overflow-x-auto rounded-xl border border-gray-700 bg-gray-900">
+                        <td class="px-4 py-3.5 text-sm text-gray-400">
+                            {{ $request->user->phone ?? '-' }}
+                        </td>
 
-            <table class="w-full text-left">
+                        <td class="px-4 py-3.5">
+                            <span class="inline-flex items-center rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium text-amber-300">
+                                Menunggu
+                            </span>
+                        </td>
 
-                <thead class="bg-gray-800 text-gray-300">
-                    <tr>
-                        <th class="px-5 py-4">No.</th>
-                        <th class="px-5 py-4">Nama</th>
-                        <th class="px-5 py-4">Email</th>
-                        <th class="px-5 py-4">Nomor HP</th>
-                        <th class="px-5 py-4">Status</th>
-                        <th class="px-5 py-4">Aksi</th>
+                        <td class="px-4 py-3.5">
+                            <div class="flex justify-end gap-2">
+                                <form action="{{ route('ketua.communities.requests.approve', [$community->id, $request->id]) }}"
+                                      method="POST"
+                                      onsubmit="return confirm('Setujui permintaan bergabung ini?')">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit"
+                                            class="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1.5 text-xs font-semibold text-emerald-300 transition hover:bg-emerald-500/20">
+                                        Setujui
+                                    </button>
+                                </form>
+
+                                <form action="{{ route('ketua.communities.requests.reject', [$community->id, $request->id]) }}"
+                                      method="POST"
+                                      onsubmit="return confirm('Tolak permintaan bergabung ini?')">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button type="submit"
+                                            class="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-300 transition hover:bg-red-500/20">
+                                        Tolak
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
                     </tr>
-                </thead>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
 
-                <tbody class="divide-y divide-gray-700">
-
-                    @forelse ($requests as $index => $request)
-
-                        <tr>
-                            <td class="px-5 py-4">
-                                {{ $index + 1 }}
-                            </td>
-
-                            <td class="px-5 py-4 font-semibold">
-                                {{ $request->user->name }}
-                            </td>
-
-                            <td class="px-5 py-4">
-                                {{ $request->user->email }}
-                            </td>
-
-                            <td class="px-5 py-4">
-                                {{ $request->user->phone ?? '-' }}
-                            </td>
-
-                            <td class="px-5 py-4">
-                                <span class="rounded-full bg-yellow-900/50 px-3 py-1 text-sm text-yellow-300">
-                                    {{ ucfirst($request->status) }}
-                                </span>
-                            </td>
-
-                            <td class="px-5 py-4">
-
-                                <div class="flex flex-wrap gap-2">
-
-                                    <form
-                                        action="{{ route('ketua.communities.requests.approve', [$community->id, $request->id]) }}"
-                                        method="POST"
-                                        onsubmit="return confirm('Setujui permintaan bergabung ini?')"
-                                    >
-                                        @csrf
-                                        @method('PATCH')
-
-                                        <button
-                                            type="submit"
-                                            class="rounded-lg bg-green-600 px-3 py-2 text-sm font-semibold hover:bg-green-700"
-                                        >
-                                            Setujui
-                                        </button>
-                                    </form>
-
-                                    <form
-                                        action="{{ route('ketua.communities.requests.reject', [$community->id, $request->id]) }}"
-                                        method="POST"
-                                        onsubmit="return confirm('Tolak permintaan bergabung ini?')"
-                                    >
-                                        @csrf
-                                        @method('PATCH')
-
-                                        <button
-                                            type="submit"
-                                            class="rounded-lg bg-red-600 px-3 py-2 text-sm font-semibold hover:bg-red-700"
-                                        >
-                                            Tolak
-                                        </button>
-                                    </form>
-
-                                </div>
-
-                            </td>
-                        </tr>
-
-                    @empty
-
-                        <tr>
-                            <td colspan="6" class="px-5 py-10 text-center text-gray-400">
-                                Belum ada permintaan bergabung.
-                            </td>
-                        </tr>
-
-                    @endforelse
-
-                </tbody>
-
-            </table>
-
-        </div>
-
-        <div class="mt-6">{{ $requests->links() }}</div>
-
-        <a href="{{ route('dashboard') }}"
-           class="mt-7 inline-block text-blue-400 hover:text-blue-300">
-            &larr; Kembali ke Dashboard
-        </a>
-
-    </main>
-
-</body>
-</html>
+    <div class="mt-6">{{ $requests->links() }}</div>
+@endif
+@endsection
