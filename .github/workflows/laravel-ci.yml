@@ -1,0 +1,59 @@
+name: Laravel CI
+
+on:
+  push:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: laravel-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: PHP 8.3 / Node.js 22
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 8.3
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, ctype, fileinfo, json, openssl, tokenizer, xml, curl, dom, pdo, pdo_sqlite, sqlite3, zip
+          coverage: none
+          tools: composer:v2
+          ini-values: memory_limit=512M
+
+      - name: Install Composer dependencies
+        uses: ramsey/composer-install@v3
+        with:
+          composer-options: '--no-scripts --prefer-dist --no-interaction --no-progress'
+
+      - name: Prepare environment file
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+          php artisan package:discover --ansi
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Run Laravel tests
+        run: php artisan test
