@@ -13,6 +13,8 @@ use Illuminate\Notifications\Notifiable;
     'name',
     'email',
     'phone',
+    'motorcycle_type',
+    'license_plate',
     'profile_photo',
     'password',
 ])]
@@ -40,7 +42,39 @@ class User extends Authenticatable
             'user_id',
             'community_id'
         )->withPivot('status', 'joined_at')
-         ->withTimestamps();
+            ->withTimestamps();
+    }
+
+    public function eventRsvps()
+    {
+        return $this->hasMany(EventRsvp::class);
+    }
+
+    public function createdEvents()
+    {
+        return $this->hasMany(Event::class, 'created_by');
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isLeader(): bool
+    {
+        return $this->role === 'ketua';
+    }
+
+    public function canManageEvents(): bool
+    {
+        return in_array($this->role, ['admin', 'ketua'], true);
+    }
+
+    public function hasCompleteMemberProfile(): bool
+    {
+        return filled($this->member_number)
+            && filled($this->motorcycle_type)
+            && filled($this->license_plate);
     }
 
     protected function casts(): array

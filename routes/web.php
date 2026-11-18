@@ -1,15 +1,19 @@
 <?php
 
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\CommunityJoinController;
 use App\Http\Controllers\CommunityRequestController;
+use App\Http\Controllers\EventController;
+use App\Http\Controllers\EventExportController;
+use App\Http\Controllers\EventRsvpController;
 use App\Http\Controllers\MemberController;
+use App\Http\Controllers\ProfileController;
 use App\Models\Community;
 use Illuminate\Support\Facades\Route;
 
-// Authentication
 Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegister'])
         ->name('register');
@@ -58,14 +62,61 @@ Route::middleware('auth')->group(function () {
     Route::post('/communities/{community}/join', [CommunityJoinController::class, 'store'])
         ->middleware('throttle:community-join')
         ->name('communities.join');
+
+    Route::get('/profile', [ProfileController::class, 'edit'])
+        ->name('profile.edit');
+
+    Route::put('/profile', [ProfileController::class, 'update'])
+        ->middleware('throttle:profile-update')
+        ->name('profile.update');
+
+    Route::get('/events', [EventController::class, 'index'])
+        ->name('events.index');
+
+    Route::get('/events/{event}', [EventController::class, 'show'])
+        ->whereNumber('event')
+        ->name('events.show');
+
+    Route::post('/events/{event}/rsvp', [EventRsvpController::class, 'store'])
+        ->whereNumber('event')
+        ->middleware('throttle:rsvp')
+        ->name('events.rsvp');
 });
 
-// Ketua: mengelola permintaan bergabung
-Route::middleware('auth')
+Route::middleware(['auth', 'role:admin,ketua'])->group(function () {
+    Route::get('/events/create', [EventController::class, 'create'])
+        ->middleware('throttle:event-write')
+        ->name('events.create');
+
+    Route::post('/events', [EventController::class, 'store'])
+        ->middleware('throttle:event-write')
+        ->name('events.store');
+
+    Route::get('/events/{event}/edit', [EventController::class, 'edit'])
+        ->whereNumber('event')
+        ->middleware('throttle:event-write')
+        ->name('events.edit');
+
+    Route::put('/events/{event}', [EventController::class, 'update'])
+        ->whereNumber('event')
+        ->middleware('throttle:event-write')
+        ->name('events.update');
+
+    Route::delete('/events/{event}', [EventController::class, 'destroy'])
+        ->whereNumber('event')
+        ->middleware('throttle:event-write')
+        ->name('events.destroy');
+
+    Route::get('/events/{event}/attendance/export', [EventExportController::class, 'download'])
+        ->whereNumber('event')
+        ->middleware('throttle:event-export')
+        ->name('events.export');
+});
+
+Route::middleware(['auth', 'role:ketua'])
     ->prefix('ketua')
     ->name('ketua.')
     ->group(function () {
-
         Route::get('/communities/{community}/requests',
             [CommunityRequestController::class, 'index'])
             ->name('communities.requests.index');
@@ -81,14 +132,20 @@ Route::middleware('auth')
             ->name('communities.requests.reject');
     });
 
-// Admin
 Route::middleware(['auth', 'role:admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
-
         Route::get('/dashboard', [AdminController::class, 'dashboard'])
             ->name('dashboard');
+
+        Route::get('/users', [AdminUserController::class, 'index'])
+            ->name('users.index');
+
+        Route::patch('/users/{user}/role', [AdminUserController::class, 'updateRole'])
+            ->whereNumber('user')
+            ->middleware('throttle:member-role')
+            ->name('users.role.update');
 
         Route::get('/communities', [CommunityController::class, 'index'])
             ->name('communities.index');

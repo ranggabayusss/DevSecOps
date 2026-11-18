@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\CommunityMember;
 use App\Models\User;
 use App\Support\ActivityLogger;
+use App\Support\MemberNumberService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
@@ -18,16 +20,21 @@ class AuthController extends Controller
         return view('auth.register');
     }
 
-    public function register(Request $request)
+    public function register(Request $request, MemberNumberService $memberNumbers)
     {
         $request->merge([
             'email' => Str::lower(trim((string) $request->input('email'))),
+            'name' => trim((string) $request->input('name')),
+            'motorcycle_type' => trim((string) $request->input('motorcycle_type')),
+            'license_plate' => strtoupper(trim((string) $request->input('license_plate'))),
         ]);
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['nullable', 'string', 'max:20'],
+            'motorcycle_type' => ['required', 'string', 'max:100'],
+            'license_plate' => ['required', 'string', 'max:20', 'regex:/^[A-Z0-9][A-Z0-9 .-]*$/'],
             'password' => [
                 'required',
                 'confirmed',
@@ -35,14 +42,18 @@ class AuthController extends Controller
             ],
         ]);
 
-        // Role is intentionally not accepted from public registration input.
-        // The database default assigns every new account the member role.
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'phone' => $validated['phone'] ?? null,
-            'password' => Hash::make($validated['password']),
-        ]);
+        $user = DB::transaction(function () use ($validated, $memberNumbers) {
+            $user = User::create([
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'] ?? null,
+                'motorcycle_type' => $validated['motorcycle_type'],
+                'license_plate' => $validated['license_plate'],
+                'password' => Hash::make($validated['password']),
+            ]);
+
+            return $memberNumbers->assignTo($user);
+        });
 
         Auth::login($user);
         $request->session()->regenerate();
@@ -68,7 +79,7 @@ class AuthController extends Controller
             'password' => ['required', 'string', 'max:255'],
         ]);
 
-        if (!Auth::attempt($credentials, $request->boolean('remember'))) {
+        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             ActivityLogger::record(
                 'auth.login.failed',
                 'Percobaan autentikasi gagal.'

@@ -35,6 +35,11 @@
                     Komunitas
                 </a>
 
+                <a href="{{ route('events.index') }}"
+                   @class([$navLink, 'bg-gray-800 text-white' => request()->routeIs('events.*'), 'text-gray-400 hover:text-white' => ! request()->routeIs('events.*')])>
+                    Acara
+                </a>
+
                 @if ($ledCommunity)
                     <a href="{{ route('ketua.communities.requests.index', $ledCommunity->id) }}"
                        @class([$navLink, 'bg-gray-800 text-white' => request()->routeIs('ketua.*'), 'text-gray-400 hover:text-white' => ! request()->routeIs('ketua.*')])>
@@ -51,10 +56,14 @@
             </nav>
 
             <div class="flex shrink-0 items-center gap-3">
-                <div class="hidden text-right leading-tight sm:block">
-                    <p class="text-sm font-medium text-gray-200">{{ $user->name }}</p>
-                    <p class="text-[11px] uppercase tracking-wider text-gray-500">{{ $user->role }}</p>
-                </div>
+                <a href="{{ route('profile.edit') }}"
+                   class="hidden text-right leading-tight sm:block"
+                   title="Buka profil anggota">
+                    <p class="text-sm font-medium text-gray-200 hover:text-orange-300">{{ $user->name }}</p>
+                    <p class="text-[11px] uppercase tracking-wider text-gray-500">
+                        {{ $user->member_number ?? 'Profil' }} &middot; {{ $user->role }}
+                    </p>
+                </a>
 
                 <form action="{{ route('logout') }}" method="POST">
                     @csrf

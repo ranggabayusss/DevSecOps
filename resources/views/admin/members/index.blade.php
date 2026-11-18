@@ -5,12 +5,17 @@
 @section('content')
 <x-page-header
     title="Manajemen Anggota"
-    :description="'Komunitas '.$community->name.' · Ketua '.($community->leader->name ?? '-')"
+    :description="'Komunitas '.$community->name.' &middot; Ketua '.($community->leader->name ?? '-')"
 >
     <x-slot:actions>
         <a href="{{ route('admin.communities.select') }}"
            class="rounded-lg border border-gray-700 bg-gray-800/60 px-4 py-2.5 text-sm font-semibold text-gray-200 transition hover:bg-gray-800">
             Daftar Komunitas
+        </a>
+
+        <a href="{{ route('admin.users.index') }}"
+           class="rounded-lg border border-gray-700 bg-gray-800/60 px-4 py-2.5 text-sm font-semibold text-gray-200 transition hover:bg-gray-800">
+            Kelola Role
         </a>
 
         <a href="{{ route('admin.communities.members.create', $community->id) }}"
@@ -46,7 +51,7 @@
         <form action="{{ route('admin.communities.leader.update', $community->id) }}"
               method="POST"
               class="mt-5 flex flex-col gap-3 sm:flex-row sm:items-end"
-              onsubmit="return confirm('Yakin ingin mengganti ketua komunitas?')">
+              data-confirm="Yakin ingin mengganti ketua komunitas?">
             @csrf
             @method('PUT')
 
@@ -103,9 +108,12 @@
             <thead class="border-b border-gray-800 bg-gray-900/60 text-xs uppercase tracking-wider text-gray-500">
                 <tr>
                     <th class="px-4 py-3 font-medium">No.</th>
+                    <th class="px-4 py-3 font-medium">Nomor Anggota</th>
                     <th class="px-4 py-3 font-medium">Nama</th>
                     <th class="px-4 py-3 font-medium">Email</th>
                     <th class="px-4 py-3 font-medium">Nomor HP</th>
+                    <th class="px-4 py-3 font-medium">Motor</th>
+                    <th class="px-4 py-3 font-medium">Plat Nomor</th>
                     <th class="px-4 py-3 font-medium">Role</th>
                     <th class="px-4 py-3 font-medium">Status</th>
                     <th class="px-4 py-3 text-right font-medium">Aksi</th>
@@ -119,6 +127,10 @@
                             {{ ($members->firstItem() ?? 1) + $index }}
                         </td>
 
+                        <td class="px-4 py-3.5 text-sm font-medium text-orange-300">
+                            {{ $membership->user->member_number ?? '-' }}
+                        </td>
+
                         <td class="px-4 py-3.5 text-sm font-medium text-white">
                             {{ $membership->user->name }}
                         </td>
@@ -129,6 +141,14 @@
 
                         <td class="px-4 py-3.5 text-sm text-gray-400">
                             {{ $membership->user->phone ?? '-' }}
+                        </td>
+
+                        <td class="px-4 py-3.5 text-sm text-gray-400">
+                            {{ $membership->user->motorcycle_type ?? '-' }}
+                        </td>
+
+                        <td class="px-4 py-3.5 text-sm text-gray-400">
+                            {{ $membership->user->license_plate ?? '-' }}
                         </td>
 
                         <td class="px-4 py-3.5">
@@ -171,7 +191,7 @@
                             @if ($membership->user_id != $community->leader_id)
                                 <form action="{{ route('admin.communities.members.destroy', [$community->id, $membership->id]) }}"
                                       method="POST"
-                                      onsubmit="return confirm('Yakin ingin mengeluarkan anggota ini?')">
+                                      data-confirm="Yakin ingin mengeluarkan anggota ini?">
                                     @csrf
                                     @method('DELETE')
 

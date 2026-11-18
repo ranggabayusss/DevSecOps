@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -27,6 +28,16 @@ class SecurityHeadersTest extends TestCase
         $this->assertNotNull(
             $response->headers->get('Content-Security-Policy-Report-Only')
         );
+    }
+
+    public function test_authenticated_responses_are_not_cacheable(): void
+    {
+        $this->withoutVite();
+
+        $this->actingAs(User::factory()->create())
+            ->get('/dashboard')
+            ->assertOk()
+            ->assertHeader('Cache-Control', 'no-store, private');
     }
 
     public function test_security_headers_are_sent_on_error_responses(): void

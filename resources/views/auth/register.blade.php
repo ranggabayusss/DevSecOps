@@ -66,6 +66,37 @@
             >
         </div>
 
+        <div>
+            <label for="motorcycle_type" class="mb-1.5 block text-sm font-medium text-gray-300">Nama / tipe motor</label>
+            <input
+                id="motorcycle_type"
+                name="motorcycle_type"
+                type="text"
+                value="{{ old('motorcycle_type') }}"
+                required
+                maxlength="100"
+                placeholder="Contoh: Honda CB150R"
+                class="w-full rounded-lg border border-gray-800 bg-gray-950 px-3.5 py-2.5 text-sm text-gray-100 placeholder:text-gray-600 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+            >
+        </div>
+
+        <div>
+            <label for="license_plate" class="mb-1.5 block text-sm font-medium text-gray-300">Plat nomor</label>
+            <input
+                id="license_plate"
+                name="license_plate"
+                type="text"
+                value="{{ old('license_plate') }}"
+                required
+                maxlength="20"
+                placeholder="Contoh: D 1234 ABC"
+                class="w-full rounded-lg border border-gray-800 bg-gray-950 px-3.5 py-2.5 text-sm uppercase text-gray-100 placeholder:normal-case placeholder:text-gray-600 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+            >
+            <p class="mt-1.5 text-xs text-gray-500">
+                Nomor anggota dibuat otomatis oleh sistem setelah akun terdaftar.
+            </p>
+        </div>
+
         <x-password-field
             id="password"
             name="password"

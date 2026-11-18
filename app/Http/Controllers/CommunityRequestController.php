@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Community;
 use App\Models\CommunityMember;
 use App\Support\ActivityLogger;
+use App\Support\MemberNumberService;
 use Illuminate\Support\Facades\DB;
 
 class CommunityRequestController extends Controller
@@ -22,11 +23,14 @@ class CommunityRequestController extends Controller
         return view('ketua.communities.requests.index', compact('community', 'requests'));
     }
 
-    public function approve(Community $community, CommunityMember $membership)
-    {
+    public function approve(
+        Community $community,
+        CommunityMember $membership,
+        MemberNumberService $memberNumbers
+    ) {
         $this->authorizeMembershipAction($community, $membership);
 
-        DB::transaction(function () use ($community, $membership) {
+        DB::transaction(function () use ($community, $membership, $memberNumbers) {
             $lockedMembership = CommunityMember::whereKey($membership->id)
                 ->lockForUpdate()
                 ->firstOrFail();
@@ -46,6 +50,8 @@ class CommunityRequestController extends Controller
                 'status' => 'active',
                 'joined_at' => now(),
             ]);
+
+            $memberNumbers->assignTo($lockedMembership->user);
 
             ActivityLogger::record(
                 'community.membership.approved',

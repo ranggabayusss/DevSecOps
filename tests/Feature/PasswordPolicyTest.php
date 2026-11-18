@@ -14,6 +14,8 @@ class PasswordPolicyTest extends TestCase
         $response = $this->post('/register', [
             'name' => 'Anggota Baru',
             'email' => 'anggota8@example.test',
+            'motorcycle_type' => 'Honda Vario',
+            'license_plate' => 'D 1111 AA',
             'password' => 'Ab1!efgh',
             'password_confirmation' => 'Ab1!efgh',
         ]);
@@ -30,6 +32,8 @@ class PasswordPolicyTest extends TestCase
         $response = $this->post('/register', [
             'name' => 'Anggota Baru',
             'email' => 'anggota7@example.test',
+            'motorcycle_type' => 'Honda Vario',
+            'license_plate' => 'D 1111 AA',
             'password' => 'Ab1!efg',
             'password_confirmation' => 'Ab1!efg',
         ]);

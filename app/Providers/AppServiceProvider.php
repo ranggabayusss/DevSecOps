@@ -34,6 +34,26 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by((string) ($request->user()?->id ?? $request->ip()));
         });
 
+        RateLimiter::for('rsvp', function (Request $request) {
+            return Limit::perMinute(20)->by((string) ($request->user()?->id ?? $request->ip()));
+        });
+
+        RateLimiter::for('profile-update', function (Request $request) {
+            return Limit::perMinute(10)->by((string) ($request->user()?->id ?? $request->ip()));
+        });
+
+        RateLimiter::for('event-write', function (Request $request) {
+            return Limit::perMinute(15)->by((string) ($request->user()?->id ?? $request->ip()));
+        });
+
+        RateLimiter::for('event-export', function (Request $request) {
+            return Limit::perMinute(5)->by((string) ($request->user()?->id ?? $request->ip()));
+        });
+
+        RateLimiter::for('member-role', function (Request $request) {
+            return Limit::perMinute(10)->by((string) ($request->user()?->id ?? $request->ip()));
+        });
+
         RateLimiter::for('admin-actions', function (Request $request) {
             return Limit::perMinute(30)->by((string) ($request->user()?->id ?? $request->ip()));
         });

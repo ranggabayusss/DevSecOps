@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Support\ActivityLogger;
+use App\Support\MemberNumberService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,7 @@ class AdminController extends Controller
         return view('admin.dashboard');
     }
 
-    public function storeLeaderAccount(Request $request): RedirectResponse
+    public function storeLeaderAccount(Request $request, MemberNumberService $memberNumbers): RedirectResponse
     {
         $request->merge([
             'leader_email' => Str::lower(trim((string) $request->input('leader_email'))),
@@ -35,13 +36,15 @@ class AdminController extends Controller
             ],
         ]);
 
-        $leader = DB::transaction(function () use ($validated): User {
+        $leader = DB::transaction(function () use ($validated, $memberNumbers): User {
             $leader = User::create([
                 'name' => $validated['leader_name'],
                 'email' => $validated['leader_email'],
                 'phone' => $validated['leader_phone'] ?? null,
                 'password' => Hash::make($validated['leader_password']),
             ]);
+
+            $memberNumbers->assignTo($leader);
 
             ActivityLogger::record(
                 'admin.leader_account.created',

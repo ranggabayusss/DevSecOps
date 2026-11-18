@@ -51,6 +51,25 @@ Jalankan:
 php artisan test
 ```
 
+## Keanggotaan, acara, RSVP, dan export Excel
+
+Fitur baru menambahkan tabel `member_number_counters`, kolom profil pada `users` (`member_number` unik, `motorcycle_type`, `license_plate`), tabel `events`, dan tabel `event_rsvps` dengan constraint unik `(event_id, user_id)`.
+
+Nomor anggota dibuat oleh `App\Support\MemberNumberService` di dalam transaksi database dengan `lockForUpdate()` pada baris counter. Formatnya `[prefix]-[urut]`, contoh `unrider-01`. Prefix berasal dari `MEMBER_NUMBER_PREFIX` (default `unrider`). Migration backfill memberi nomor pada pengguna lama dan mengurutkan admin, ketua, lalu member agar data awal tetap konsisten. Pendaftaran publik **selalu** menghasilkan role `member`, walaupun nomor urutnya 1 atau 2; pemetaan urutan ke role admin/ketua hanya dipakai pada alur provisioning tepercaya (seeder/admin) untuk mencegah elevation of privilege lewat registrasi publik. Admin dapat mengubah role melalui halaman Manajemen Anggota.
+
+| STRIDE | Implementasi pada fitur baru |
+|---|---|
+| **Spoofing** | RSVP dan edit profil memakai `$request->user()` dari sesi; `user_id`, `event_id`, `role`, dan `member_number` dari body diabaikan. Form memakai CSRF token Laravel, password tetap di-hash, dan session ID diregenerasi setelah login. |
+| **Tampering** | `User::$fillable` hanya memuat field profil yang aman; `role` dan `member_number` diisi lewat `forceFill` server-side. Nomor anggota memakai transaksi + `lockForUpdate` agar tidak duplikat. Eloquent/parameter binding mencegah SQL injection, Blade meng-escape output, dan sel Excel yang diawali `=`, `+`, `-`, `@`, tab, atau CR diberi prefix `'` oleh `SpreadsheetValueSanitizer`. |
+| **Repudiation** | `events.created_by`/`updated_by`, `event_rsvps.confirmed_at`, serta `activity_logs` mencatat pembuatan/ubah/hapus acara, perubahan role, perubahan RSVP, export Excel, dan update profil beserta aktor, IP, dan user-agent. |
+| **Information disclosure** | Halaman acara dan daftar anggota memerlukan login; export dan halaman anggota memakai RBAC admin/ketua. Detail acara memakai `Cache-Control: no-store`. Error mengikuti `APP_DEBUG=false` sehingga stack trace tidak ditampilkan. Daftar anggota dan kehadiran dipaginasi. |
+| **Denial of service** | Rate limiter `rsvp`, `event-write`, `event-export`, `profile-update`, dan `member-role` ditambahkan; daftar acara, kehadiran, dan anggota memakai pagination. Export dibatasi 5 permintaan/menit per pengguna. |
+| **Elevation of privilege** | Route admin/ketua dilindungi middleware `role`, `EventPolicy`, dan otorisasi FormRequest. Hanya Admin yang boleh mengubah role; Admin tidak dapat mengubah role akunnya sendiri agar tidak terjadi lockout. |
+
+Export `.xlsx` dibuat oleh `App\Support\XlsxWriter` tanpa ketergantungan ekstensi `zip`, menggunakan format OpenXML dan ZIP stored-entry murni PHP. Nama file dibersihkan menjadi `Kehadiran_[Judul]_[Tanggal].xlsx` sehingga tidak dapat dipakai untuk header injection.
+
+Pengujian baru tersedia di `tests/Feature/EventMembershipTest.php` dan `tests/Unit/SpreadsheetValueSanitizerTest.php`, mencakup auto-number, penolakan field istimewa saat registrasi, RBAC acara/export/role, RSVP tanpa `user_id` dari client, penguncian RSVP saat acara selesai, formula injection pada Excel, dan rate limit export.
+
 ## Batasan dan pekerjaan lanjutan
 
 Mitigasi pada aplikasi tidak dapat menjamin perlindungan terhadap volumetric DDoS atau serangan pada infrastruktur di luar Laravel. Untuk deployment publik, gunakan HTTPS, reverse proxy/WAF atau CDN dengan rate limiting, firewall, backup database, monitoring, dan pembaruan dependency berkala.

@@ -34,5 +34,31 @@
             Pilih komunitas &rarr;
         </span>
     </a>
+
+    <a href="{{ route('admin.users.index') }}"
+       class="group rounded-xl border border-gray-800 bg-gray-900 p-5 transition hover:border-orange-500/60">
+        <h2 class="font-semibold text-white transition group-hover:text-orange-400">
+            Manajemen Anggota
+        </h2>
+        <p class="mt-1.5 text-sm text-gray-400">
+            Lihat nomor anggota, kendaraan, dan ubah role pengguna.
+        </p>
+        <span class="mt-4 inline-block text-sm font-medium text-orange-400">
+            Kelola anggota &rarr;
+        </span>
+    </a>
+
+    <a href="{{ route('events.index') }}"
+       class="group rounded-xl border border-gray-800 bg-gray-900 p-5 transition hover:border-orange-500/60">
+        <h2 class="font-semibold text-white transition group-hover:text-orange-400">
+            Acara &amp; Pengumuman
+        </h2>
+        <p class="mt-1.5 text-sm text-gray-400">
+            Buat acara, pantau RSVP, dan unduh daftar hadir.
+        </p>
+        <span class="mt-4 inline-block text-sm font-medium text-orange-400">
+            Kelola acara &rarr;
+        </span>
+    </a>
 </div>
 @endsection
