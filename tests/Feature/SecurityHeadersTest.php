@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\File;
 use Tests\TestCase;
 
 class SecurityHeadersTest extends TestCase
@@ -33,6 +34,28 @@ class SecurityHeadersTest extends TestCase
         $this->assertFalse(
             $response->headers->has('Content-Security-Policy-Report-Only')
         );
+    }
+
+    public function test_csp_allows_vite_dev_server_when_hot_file_exists(): void
+    {
+        $this->withoutVite();
+
+        $hotFile = public_path('hot');
+        $originalEnvironment = app()->environment();
+
+        try {
+            File::put($hotFile, 'http://localhost:5173');
+            $this->app['env'] = 'local';
+
+            $contentSecurityPolicy = (string) $this->get('/login')
+                ->headers->get('Content-Security-Policy');
+
+            $this->assertStringContainsString('http://localhost:5173', $contentSecurityPolicy);
+            $this->assertStringContainsString('ws://localhost:5173', $contentSecurityPolicy);
+        } finally {
+            File::delete($hotFile);
+            $this->app['env'] = $originalEnvironment;
+        }
     }
 
     public function test_authenticated_responses_are_not_cacheable(): void

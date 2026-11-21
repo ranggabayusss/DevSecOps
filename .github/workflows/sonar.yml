@@ -30,6 +30,27 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_sqlite, sqlite3, pdo_mysql, zip, gd, bcmath, exif, pcntl, intl
+          coverage: xdebug
+
+      - name: Prepare environment
+        run: cp .env.example .env
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Generate application key
+        run: php artisan key:generate --ansi
+
+      - name: Run tests with coverage
+        run: |
+          mkdir -p build/logs
+          vendor/bin/phpunit --coverage-clover build/logs/clover.xml --colors=never
+
       - name: SonarQube Cloud scan
         uses: SonarSource/sonarqube-scan-action@e805d875275f728fac1885b413934be6d7c63f65 #8.4.1
         env:
