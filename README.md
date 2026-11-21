@@ -32,7 +32,7 @@ Aplikasi Laravel untuk pengelolaan komunitas Unknown Rider. Versi ini menghapus 
 6. (Opsional) Isi `INITIAL_ADMIN_EMAIL` dan `INITIAL_ADMIN_PASSWORD` pada `.env`, lalu jalankan `docker compose exec app php artisan db:seed --class=AdminUserSeeder`.
 7. Buka `http://localhost:8000`.
 
-Untuk volume database lama, variabel `MYSQL_*` hanya digunakan saat volume MySQL pertama kali dibuat. Jangan hapus volume sebelum backup. Jika volume lama masih menggunakan akun root, buat akun aplikasi `unknown_rider_app` dengan hak akses hanya ke database `rockbikers_db`, lalu samakan nilainya dengan `DB_USERNAME` dan `DB_PASSWORD`. Database hanya tersedia di jaringan internal Docker dan tidak dipublikasikan ke host. Web hanya di-bind ke `127.0.0.1` untuk lingkungan pengembangan. Atur reverse proxy dan HTTPS sebelum deployment publik, lalu set `APP_ENV=production`, `APP_DEBUG=false`, dan `SESSION_SECURE_COOKIE=true`.
+Untuk volume database lama, variabel `MYSQL_*` hanya digunakan saat volume MySQL pertama kali dibuat. Jangan hapus volume sebelum backup. Jika volume lama masih menggunakan akun root, buat akun aplikasi `unknown_rider_app` dengan hak akses hanya ke database `rockbikers_db`, lalu samakan nilainya dengan `DB_USERNAME` dan `DB_PASSWORD`. Database hanya tersedia di jaringan internal Docker dan tidak dipublikasikan ke host. Web hanya di-bind ke `127.0.0.1` untuk lingkungan pengembangan. Atur reverse proxy dan HTTPS sebelum deployment publik, lalu set `APP_ENV=production` dan `APP_DEBUG=false`. Cookie sesi otomatis memakai atribut `Secure` saat `APP_ENV=production`; jangan set `SESSION_SECURE_COOKIE=false` di production.
 
 ## Pengujian
 
