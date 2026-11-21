@@ -28,9 +28,6 @@ storage/framework/views/*
 database/database.sqlite
 database/backups
 docs
-postman
-.postman
 tests
 zap-report.html
 zap-report.json
-Jenkinsfile
