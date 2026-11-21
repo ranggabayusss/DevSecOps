@@ -25,8 +25,13 @@ class SecurityHeadersTest extends TestCase
             ->assertHeader('Cross-Origin-Resource-Policy', 'same-origin')
             ->assertHeader('X-Permitted-Cross-Domain-Policies', 'none');
 
-        $this->assertNotNull(
-            $response->headers->get('Content-Security-Policy-Report-Only')
+        $response->assertHeader('Content-Security-Policy');
+        $contentSecurityPolicy = (string) $response->headers->get('Content-Security-Policy');
+
+        $this->assertStringContainsString("default-src 'self'", $contentSecurityPolicy);
+        $this->assertStringNotContainsString("'unsafe-inline'", $contentSecurityPolicy);
+        $this->assertFalse(
+            $response->headers->has('Content-Security-Policy-Report-Only')
         );
     }
 
