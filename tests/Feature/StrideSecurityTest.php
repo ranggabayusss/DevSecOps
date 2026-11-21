@@ -26,6 +26,8 @@ class StrideSecurityTest extends TestCase
             'name' => 'Test Member',
             'email' => 'member@example.test',
             'phone' => '08123456789',
+            'motorcycle_type' => 'Honda CB150R',
+            'license_plate' => 'D 1234 ABC',
             'password' => 'SecurePass!2026',
             'password_confirmation' => 'SecurePass!2026',
             'role' => 'admin',
@@ -36,6 +38,7 @@ class StrideSecurityTest extends TestCase
         $this->assertDatabaseHas('users', [
             'email' => 'member@example.test',
             'role' => 'member',
+            'member_number' => 'unrider-01',
         ]);
 
         $this->assertDatabaseHas('activity_logs', [

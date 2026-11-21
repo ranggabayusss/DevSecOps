@@ -27,6 +27,13 @@
     </section>
 @endif
 
+@if (! Auth::user()->hasCompleteMemberProfile())
+    <x-alert type="warning" class="mb-6">
+        Profil anggota belum lengkap. Lengkapi nama motor dan plat nomor agar dapat melakukan RSVP acara.
+        <a href="{{ route('profile.edit') }}" class="font-semibold underline">Lengkapi sekarang</a>.
+    </x-alert>
+@endif
+
 <div class="grid gap-4 sm:grid-cols-2">
     <a href="{{ route('communities.index') }}"
        class="group rounded-xl border border-gray-800 bg-gray-900 p-5 transition hover:border-orange-500/60">
@@ -41,6 +48,19 @@
         </span>
     </a>
 
+    <a href="{{ route('events.index') }}"
+       class="group rounded-xl border border-gray-800 bg-gray-900 p-5 transition hover:border-orange-500/60">
+        <h2 class="font-semibold text-white transition group-hover:text-orange-400">
+            Acara &amp; RSVP
+        </h2>
+        <p class="mt-1.5 text-sm text-gray-400">
+            Cek jadwal kegiatan dan konfirmasi kehadiranmu.
+        </p>
+        <span class="mt-4 inline-block text-sm font-medium text-orange-400">
+            Lihat acara &rarr;
+        </span>
+    </a>
+
     @if (Auth::user()->role === 'admin')
         <a href="{{ route('admin.dashboard') }}"
            class="group rounded-xl border border-gray-800 bg-gray-900 p-5 transition hover:border-orange-500/60">
@@ -48,19 +68,28 @@
                 Panel Admin
             </h2>
             <p class="mt-1.5 text-sm text-gray-400">
-                Kelola komunitas, ketua, dan anggota.
+                Kelola komunitas, ketua, anggota, dan role pengguna.
             </p>
             <span class="mt-4 inline-block text-sm font-medium text-orange-400">
                 Buka panel &rarr;
             </span>
         </a>
-    @else
-        <div class="rounded-xl border border-gray-800 bg-gray-900 p-5">
-            <h2 class="font-semibold text-white">Akun Saya</h2>
-            <p class="mt-1.5 text-sm text-gray-400">
-                Role akun: <span class="text-gray-200">{{ ucfirst(Auth::user()->role) }}</span>
-            </p>
-        </div>
     @endif
+
+    <a href="{{ route('profile.edit') }}"
+       class="group rounded-xl border border-gray-800 bg-gray-900 p-5 transition hover:border-orange-500/60">
+        <h2 class="font-semibold text-white transition group-hover:text-orange-400">
+            Profil Anggota
+        </h2>
+        <p class="mt-1.5 text-sm text-gray-400">
+            Nomor anggota:
+            <span class="font-semibold text-orange-300">{{ Auth::user()->member_number ?? '-' }}</span>
+            <span class="mx-1 text-gray-700">|</span>
+            {{ ucfirst(Auth::user()->role) }}
+        </p>
+        <span class="mt-4 inline-block text-sm font-medium text-orange-400">
+            Kelola profil &rarr;
+        </span>
+    </a>
 </div>
 @endsection

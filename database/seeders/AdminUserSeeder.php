@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use App\Support\MemberNumberService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 use RuntimeException;
@@ -26,5 +27,9 @@ class AdminUserSeeder extends Seeder
         $user->password = Hash::make($password);
         $user->role = 'admin';
         $user->save();
+
+        app(MemberNumberService::class)->assignTo($user, true);
+
+        $user->forceFill(['role' => 'admin'])->save();
     }
 }

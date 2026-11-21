@@ -16,3 +16,11 @@ document.querySelectorAll('[data-password-toggle]').forEach((toggle) => {
         toggle.querySelector('[data-password-icon="hide"]')?.classList.toggle('hidden', !show);
     });
 });
+
+document.querySelectorAll('form[data-confirm]').forEach((form) => {
+    form.addEventListener('submit', (event) => {
+        if (!window.confirm(form.dataset.confirm)) {
+            event.preventDefault();
+        }
+    });
+});

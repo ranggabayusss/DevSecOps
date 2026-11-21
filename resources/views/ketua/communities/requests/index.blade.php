@@ -27,9 +27,12 @@
             <thead class="border-b border-gray-800 bg-gray-900/60 text-xs uppercase tracking-wider text-gray-500">
                 <tr>
                     <th class="px-4 py-3 font-medium">No.</th>
+                    <th class="px-4 py-3 font-medium">Nomor Anggota</th>
                     <th class="px-4 py-3 font-medium">Nama</th>
                     <th class="px-4 py-3 font-medium">Email</th>
                     <th class="px-4 py-3 font-medium">Nomor HP</th>
+                    <th class="px-4 py-3 font-medium">Motor</th>
+                    <th class="px-4 py-3 font-medium">Plat Nomor</th>
                     <th class="px-4 py-3 font-medium">Status</th>
                     <th class="px-4 py-3 text-right font-medium">Aksi</th>
                 </tr>
@@ -40,6 +43,10 @@
                     <tr class="hover:bg-gray-800/40">
                         <td class="px-4 py-3.5 text-sm text-gray-500">
                             {{ $requests->firstItem() + $index }}
+                        </td>
+
+                        <td class="px-4 py-3.5 text-sm font-medium text-orange-300">
+                            {{ $request->user->member_number ?? '-' }}
                         </td>
 
                         <td class="px-4 py-3.5 text-sm font-medium text-white">
@@ -54,6 +61,14 @@
                             {{ $request->user->phone ?? '-' }}
                         </td>
 
+                        <td class="px-4 py-3.5 text-sm text-gray-400">
+                            {{ $request->user->motorcycle_type ?? '-' }}
+                        </td>
+
+                        <td class="px-4 py-3.5 text-sm text-gray-400">
+                            {{ $request->user->license_plate ?? '-' }}
+                        </td>
+
                         <td class="px-4 py-3.5">
                             <span class="inline-flex items-center rounded-full border border-amber-500/30 bg-amber-500/10 px-2.5 py-0.5 text-xs font-medium text-amber-300">
                                 Menunggu
@@ -64,7 +79,7 @@
                             <div class="flex justify-end gap-2">
                                 <form action="{{ route('ketua.communities.requests.approve', [$community->id, $request->id]) }}"
                                       method="POST"
-                                      onsubmit="return confirm('Setujui permintaan bergabung ini?')">
+                                      data-confirm="Setujui permintaan bergabung ini?">
                                     @csrf
                                     @method('PATCH')
                                     <button type="submit"
@@ -75,7 +90,7 @@
 
                                 <form action="{{ route('ketua.communities.requests.reject', [$community->id, $request->id]) }}"
                                       method="POST"
-                                      onsubmit="return confirm('Tolak permintaan bergabung ini?')">
+                                      data-confirm="Tolak permintaan bergabung ini?">
                                     @csrf
                                     @method('PATCH')
                                     <button type="submit"

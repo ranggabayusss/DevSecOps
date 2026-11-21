@@ -33,6 +33,7 @@ class AdminLeaderAccountTest extends TestCase
         $this->assertSame('Calon Ketua Baru', $leader->name);
         $this->assertSame('member', $leader->role);
         $this->assertSame('081234567890', $leader->phone);
+        $this->assertMatchesRegularExpression('/^unrider-\d{2,}$/', (string) $leader->member_number);
         $this->assertTrue(Hash::check('SecurePass!2026', $leader->password));
 
         $this->assertDatabaseHas('activity_logs', [
