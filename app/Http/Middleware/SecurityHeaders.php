@@ -28,16 +28,34 @@ class SecurityHeaders
             }
         }
 
+        $scriptSources = ["'self'"];
+        $connectSources = ["'self'"];
+
+        if (app()->environment('local') && file_exists(public_path('hot'))) {
+            $scriptSources[] = 'http://localhost:5173';
+            $scriptSources[] = 'http://127.0.0.1:5173';
+            $connectSources[] = 'ws://localhost:5173';
+            $connectSources[] = 'ws://127.0.0.1:5173';
+        }
+
+        $contentSecurityPolicy = implode('; ', [
+            "default-src 'self'",
+            'script-src '.implode(' ', $scriptSources),
+            "style-src 'self'",
+            "img-src 'self' data:",
+            "font-src 'self'",
+            "object-src 'none'",
+            "base-uri 'self'",
+            "form-action 'self'",
+            "frame-ancestors 'none'",
+            'connect-src '.implode(' ', $connectSources),
+        ]);
+
         if (
             ! $response->headers->has('Content-Security-Policy')
             && ! $response->headers->has('Content-Security-Policy-Report-Only')
         ) {
-            $response->headers->set(
-                'Content-Security-Policy-Report-Only',
-                "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; "
-                ."img-src 'self' data:; font-src 'self'; object-src 'none'; base-uri 'self'; "
-                ."form-action 'self'; frame-ancestors 'none'"
-            );
+            $response->headers->set('Content-Security-Policy', $contentSecurityPolicy);
         }
 
         if ($request->isSecure() && ! $response->headers->has('Strict-Transport-Security')) {

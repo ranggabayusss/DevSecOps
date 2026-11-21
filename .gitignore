@@ -34,6 +34,9 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 
+# Generated build and coverage artifacts
+/build/
+
 # Generated security scan artifacts (never commit scan output)
 /zap-report.html
 /zap-report.json

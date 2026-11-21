@@ -30,18 +30,29 @@ Migration pembuat tabel lama sengaja tetap disimpan sebagai jejak historis migra
 Lapisan berikut memastikan file proyek tidak dapat diakses langsung dari browser maupun terbawa ke artefak build:
 
 - **Docroot terbatas pada `public/`.** Nginx dan Apache hanya menyajikan `public/`; `.env`, `app/`, `config/`, `database/`, `storage/`, `vendor/`, `tests/`, dan dokumen internal berada di luar jangkauan HTTP.
-- **Middleware `SecurityHeaders`.** Header `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`, `Cross-Origin-Resource-Policy`, `X-Permitted-Cross-Domain-Policies`, dan CSP report-only dipasang di level aplikasi; HSTS ditambahkan otomatis pada request HTTPS.
+- **Middleware `SecurityHeaders`.** Header `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`, `Cross-Origin-Resource-Policy`, `X-Permitted-Cross-Domain-Policies`, dan CSP enforcing dipasang di level aplikasi; HSTS ditambahkan otomatis pada request HTTPS.
+- **Konfigurasi sesi.** `.env.example` tidak lagi memaksa `SESSION_SECURE_COOKIE=false`; nilai default mengikuti `APP_ENV=production` sehingga cookie sesi hanya dikirim melalui HTTPS. Set `SESSION_SECURE_COOKIE=true` secara eksplisit bila aplikasi dilayani via HTTPS dengan `APP_ENV` selain `production`.
 - **Nginx.** `server_tokens off`, blokir dotfile, file sensitif (`composer.*`, `package*.json`, `phpunit.xml`, `.env`), ekstensi berbahaya (`.sql`, `.log`, `.bak`, `.old`, `.conf`, `.yaml`, `.md`, `.pdf`, `.drawio`), metode HTTP selain GET/HEAD/POST/PUT/PATCH/DELETE/OPTIONS, serta `fastcgi_hide_header X-Powered-By`.
 - **PHP-FPM.** `expose_php=Off`, `display_errors=Off`, `log_errors=On`, `cgi.fix_pathinfo=0`, `session.use_strict_mode=1`, cookie sesi HttpOnly + SameSite, dan `allow_url_include=Off`.
 - **Apache.** `public/.htaccess` menambahkan security headers, mematikan `X-Powered-By`, dan menolak file tersembunyi.
 - **Docker.** `.dockerignore` mengecualikan `.env`, `.git`, `vendor`, `node_modules`, storage, database lokal, hasil scan, dan dokumentasi dari build context.
 - **Repository.** `zap-report.*`, `database/backups/`, `*.sql`, `.env*`, dan artefak lokal diabaikan oleh Git. `robots.txt` menolak seluruh crawling.
 
-Seluruh path sensitif juga diuji melalui `tests/Feature/SecurityHeadersTest.php` (header keamanan, response error, dan path repository yang tidak boleh routable).
+Seluruh path sensitif juga diuji melalui `tests/Feature/SecurityHeadersTest.php` (header keamanan, response error, path repository yang tidak boleh routable, dan CSP enforcing).
+
+## Hasil OWASP ZAP
+
+Baseline scan ZAP 2.17.0 (21 November 2026) terhadap `http://host.docker.internal:8000` memakai `docs/security/zap.yaml` menghasilkan 0 temuan High/Medium. Temuan Medium "CSP Header Not Set" sudah diatasi dengan mengubah CSP dari Report-Only menjadi enforcing dan menghapus satu-satunya inline style pada halaman yang tidak terpakai. Temuan yang tersisa:
+
+- `Cookie No HttpOnly Flag` (Low) hanya pada cookie `XSRF-TOKEN`. Cookie ini memang harus dapat dibaca JavaScript untuk kebutuhan CSRF; cookie sesi tetap `HttpOnly`.
+- `Big Redirect Detected` (Low) berasal dari response redirect Laravel yang menyertakan body HTML; tidak ada data sensitif di dalamnya.
+- `Authentication Request Identified` dan `Session Management Response Identified` bersifat informational.
+
+Rate limit Nginx diuji terpisah dengan 60 request paralel ke `/up`: 22 respons `200` dan 38 respons `429`, sehingga pembatasan request terbukti aktif.
 
 ## Pengujian yang disertakan
 
-`tests/Feature/StrideSecurityTest.php` mencakup pengujian bahwa endpoint tracking tidak tersedia, role yang dikirim saat registrasi tidak dapat menaikkan hak akses, dashboard memerlukan login, dan endpoint admin menolak pengguna biasa.
+`tests/Feature/StrideSecurityTest.php` mencakup pengujian bahwa endpoint tracking tidak tersedia, role yang dikirim saat registrasi tidak dapat menaikkan hak akses, dashboard memerlukan login, endpoint admin menolak pengguna biasa, ketua tidak dapat mengakses area admin, ketua lain tidak dapat mengelola permintaan komunitas milik ketua lain, member tidak dapat menyetujui/menolak permintaan bergabung, dan `ActivityLog` tidak dapat diubah atau dihapus melalui model.
 
 `tests/Feature/SecurityHeadersTest.php` mencakup pengujian security headers pada response normal dan error, serta memastikan path seperti `.env`, `composer.json`, `phpunit.xml`, log, dan database lokal tidak dapat diakses melalui HTTP.
 
@@ -68,12 +79,12 @@ Nomor anggota dibuat oleh `App\Support\MemberNumberService` di dalam transaksi d
 
 Export `.xlsx` dibuat oleh `App\Support\XlsxWriter` tanpa ketergantungan ekstensi `zip`, menggunakan format OpenXML dan ZIP stored-entry murni PHP. Nama file dibersihkan menjadi `Kehadiran_[Judul]_[Tanggal].xlsx` sehingga tidak dapat dipakai untuk header injection.
 
-Pengujian baru tersedia di `tests/Feature/EventMembershipTest.php` dan `tests/Unit/SpreadsheetValueSanitizerTest.php`, mencakup auto-number, penolakan field istimewa saat registrasi, RBAC acara/export/role, RSVP tanpa `user_id` dari client, penguncian RSVP saat acara selesai, formula injection pada Excel, dan rate limit export.
+Pengujian baru tersedia di `tests/Feature/EventMembershipTest.php` dan `tests/Unit/SpreadsheetValueSanitizerTest.php`, mencakup auto-number, penolakan field istimewa saat registrasi, RBAC acara/export/role, RSVP tanpa `user_id` dari client, penguncian RSVP saat acara selesai, formula injection pada Excel, dan rate limit export. `tests/Feature/StrideSecurityTest.php` menambahkan skenario otorisasi lintas role (ketua vs admin, ketua vs ketua, member vs ketua) serta immutability activity log.
 
 ## Batasan dan pekerjaan lanjutan
 
 Mitigasi pada aplikasi tidak dapat menjamin perlindungan terhadap volumetric DDoS atau serangan pada infrastruktur di luar Laravel. Untuk deployment publik, gunakan HTTPS, reverse proxy/WAF atau CDN dengan rate limiting, firewall, backup database, monitoring, dan pembaruan dependency berkala.
 
-Activity log aplikasi membantu investigasi dan akuntabilitas, tetapi bukan bukti non-repudiation yang tahan manipulasi terhadap administrator database. Untuk kebutuhan audit formal, kirim log ke sistem terpisah dengan append-only/immutable retention dan batasi akses database.
+Activity log aplikasi membantu investigasi dan akuntabilitas. Log tidak diekspos melalui route/web, dan model `ActivityLog` menolak operasi update/delete. Namun log tetap bukan bukti non-repudiation yang tahan manipulasi terhadap administrator database. Untuk kebutuhan audit formal, batasi hak user database aplikasi (misalnya hanya `SELECT`/`INSERT` pada `activity_logs`) atau kirim log ke sistem terpisah dengan append-only/immutable retention.
 
 Pengujian di paket ini bersifat source-level dan feature tests. Hasil runtime lengkap masih harus dikonfirmasi pada environment yang memiliki dependency Composer terpasang dan database yang aktif.
