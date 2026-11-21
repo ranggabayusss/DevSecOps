@@ -20,7 +20,7 @@ concurrency:
 jobs:
   scan:
     name: SonarQube Cloud scan
-    if: ${{ vars.SONAR_ENABLED == 'true' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
+    if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
@@ -37,5 +37,5 @@ jobs:
           SONAR_HOST_URL: https://sonarcloud.io
         with:
           args: >
-            -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY || 'ranggabayusss_DevSecOps' }}
-            -Dsonar.organization=${{ vars.SONAR_ORGANIZATION || 'ranggabayusss' }}
+            -Dsonar.projectKey=ranggabayusss_DevSecOps
+            -Dsonar.organization=ranggabayusss-1
